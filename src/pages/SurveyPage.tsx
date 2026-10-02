@@ -495,6 +495,12 @@ export function SurveyPage() {
           q6={answers.q6}
           childName={answers.childName}
           batch={batch}
+          onExit={() => {
+            setSubmitted(false)
+            setStep('landing')
+            setAnswers(emptyAnswers())
+            setError('')
+          }}
         />
       )}
     </div>

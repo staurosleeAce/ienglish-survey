@@ -1,14 +1,22 @@
 ﻿/* ============================================================
    iEnglish 7日英語閱讀口說營 · 結營問券 — 設計系統
-   品牌視覺來源：iEnglish 官方（品牌綠主色 × 暖白留白 × 黃橘輔助色）
+   品牌視覺來源：iEnglish 台灣官方網站
+   品牌藍為主（CTA/selected/進度）· 品牌綠為背景色調 · 黃橘少量
    ============================================================ */
 
 :root {
-  /* 品牌色：以 iEnglish 品牌綠為主 */
-  --brand-green: #1e9d6d;
-  --brand-green-dark: #177a55;
-  --brand-green-soft: rgba(30, 157, 109, 0.12);
-  --brand-green-softer: rgba(30, 157, 109, 0.06);
+  /* 品牌藍：主色（CTA、selected、進度、brand name） */
+  --brand-blue: #1c9ad6;
+  --brand-blue-dark: #1478a8;
+  --brand-blue-deep: #0f5f88;
+  --brand-blue-soft: rgba(28, 154, 214, 0.13);
+  --brand-blue-softer: rgba(28, 154, 214, 0.07);
+
+  /* 品牌綠：背景色調（淡淡品牌綠） */
+  --brand-green: #35b58a;
+  --brand-green-dark: #1d8b64;
+  --brand-green-soft: rgba(53, 181, 138, 0.12);
+  --brand-green-softer: rgba(53, 181, 138, 0.05);
 
   /* 輔助色：黃／橘（少量點綴） */
   --brand-yellow: #ffc222;
@@ -16,25 +24,25 @@
   --brand-orange: #ff9f43;
   --brand-orange-soft: rgba(255, 159, 67, 0.16);
 
-  /* 中性色：暖白背景、深綠灰文字 */
-  --bg-warm: #fbf8f2;
+  /* 中性色：暖白背景、深藍灰文字 */
+  --bg-warm: #f7f8f7;
   --surface: #ffffff;
-  --surface-warm: #fdfaf4;
-  --text-primary: #1f2d26;
-  --text-secondary: #5b6b62;
-  --text-faint: #93a09a;
-  --border: #e7e2d8;
-  --border-strong: #cfc8ba;
+  --surface-warm: #fbfcfa;
+  --text-primary: #20343e;
+  --text-secondary: #5b6b74;
+  --text-faint: #93a2ab;
+  --border: #e2e8e6;
+  --border-strong: #c9d4d2;
 
-  --shadow-sm: 0 1px 3px rgba(31, 45, 38, 0.06);
-  --shadow: 0 4px 18px rgba(31, 45, 38, 0.09);
-  --shadow-lg: 0 14px 44px rgba(31, 45, 38, 0.16);
+  --shadow-sm: 0 1px 3px rgba(32, 52, 62, 0.06);
+  --shadow: 0 4px 18px rgba(32, 52, 62, 0.09);
+  --shadow-lg: 0 14px 44px rgba(32, 52, 62, 0.16);
 
   --radius-sm: 12px;
   --radius: 18px;
   --radius-lg: 26px;
 
-  --gradient-brand: linear-gradient(135deg, #1e9d6d 0%, #2bb67f 100%);
+  --gradient-brand: linear-gradient(135deg, #1c9ad6 0%, #35b5c9 100%);
   --gradient-warm: linear-gradient(135deg, #ffc222 0%, #ff9f43 100%);
 
   font-family: 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', system-ui,
@@ -147,7 +155,7 @@ textarea {
   font-size: 15px;
   font-weight: 800;
   letter-spacing: 0.4px;
-  color: var(--brand-green-dark);
+  color: var(--brand-blue-dark);
 }
 
 .brand-tag {
@@ -217,7 +225,7 @@ textarea {
 }
 
 .landing-title .em {
-  color: var(--brand-green-dark);
+  color: var(--brand-blue-dark);
 }
 
 .landing-sub {
@@ -249,7 +257,7 @@ textarea {
 }
 
 .landing-card strong {
-  color: var(--brand-green-dark);
+  color: var(--brand-blue-dark);
   font-weight: 700;
 }
 
@@ -300,12 +308,12 @@ textarea {
 .btn--primary {
   background: var(--gradient-brand);
   color: #fff;
-  box-shadow: 0 8px 24px rgba(30, 157, 109, 0.32);
+  box-shadow: 0 8px 24px rgba(28, 154, 214, 0.32);
 }
 
 .btn--primary:not(:disabled):hover {
   filter: brightness(1.04);
-  box-shadow: 0 10px 28px rgba(30, 157, 109, 0.4);
+  box-shadow: 0 10px 28px rgba(28, 154, 214, 0.4);
 }
 
 .btn--warm {
@@ -321,8 +329,8 @@ textarea {
 }
 
 .btn--ghost:not(:disabled):hover {
-  border-color: var(--brand-green);
-  color: var(--brand-green-dark);
+  border-color: var(--brand-blue);
+  color: var(--brand-blue-dark);
 }
 
 .btn--block {
@@ -378,7 +386,7 @@ textarea {
 }
 
 .progress-meta .step {
-  color: var(--brand-green-dark);
+  color: var(--brand-blue-dark);
 }
 
 .progress-meta .percent {
@@ -397,13 +405,13 @@ textarea {
 .progress-fill {
   height: 100%;
   border-radius: 999px;
-  background: linear-gradient(90deg, var(--brand-green-dark), var(--brand-green));
+  background: linear-gradient(90deg, var(--brand-blue-dark), var(--brand-blue));
   transition: width 0.45s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
 }
 
 .progress-fill.done {
-  background: linear-gradient(90deg, var(--brand-green), var(--brand-green-dark));
+  background: linear-gradient(90deg, var(--brand-blue), var(--brand-blue-dark));
 }
 
 .progress-steps {
@@ -421,11 +429,11 @@ textarea {
 }
 
 .progress-step.on {
-  background: var(--brand-green);
+  background: var(--brand-blue);
 }
 
 .progress-step.done {
-  background: var(--brand-green);
+  background: var(--brand-blue);
 }
 
 /* ---------- Question ---------- */
@@ -436,7 +444,7 @@ textarea {
 .q-eyebrow {
   font-size: 13px;
   font-weight: 700;
-  color: var(--brand-green-dark);
+  color: var(--brand-blue-dark);
   letter-spacing: 1px;
   margin-bottom: 6px;
 }
@@ -461,7 +469,7 @@ textarea {
   margin: 8px 0 0;
   font-size: 13.5px;
   font-weight: 600;
-  color: var(--brand-green);
+  color: var(--brand-blue-dark);
 }
 
 .q-list {
@@ -496,13 +504,13 @@ textarea {
 }
 
 .opt:hover {
-  border-color: color-mix(in srgb, var(--brand-green) 55%, var(--border));
+  border-color: color-mix(in srgb, var(--brand-blue) 55%, var(--border));
 }
 
 .opt.selected {
-  border-color: var(--brand-green);
-  background: linear-gradient(135deg, rgba(30, 157, 109, 0.12), rgba(43, 182, 127, 0.07));
-  box-shadow: 0 6px 22px rgba(30, 157, 109, 0.18);
+  border-color: var(--brand-blue);
+  background: linear-gradient(135deg, rgba(28, 154, 214, 0.12), rgba(53, 181, 201, 0.07));
+  box-shadow: 0 6px 22px rgba(28, 154, 214, 0.18);
 }
 
 .opt-icon {
@@ -522,7 +530,7 @@ textarea {
 .opt.selected .opt-icon {
   background: #fff;
   transform: scale(1.05);
-  border-color: color-mix(in srgb, var(--brand-green) 40%, transparent);
+  border-color: color-mix(in srgb, var(--brand-blue) 40%, transparent);
 }
 
 .opt-label {
@@ -550,8 +558,8 @@ textarea {
 }
 
 .opt.selected .opt-check {
-  background: var(--brand-green);
-  border-color: var(--brand-green);
+  background: var(--brand-blue);
+  border-color: var(--brand-blue);
   color: #fff;
   animation: pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
@@ -580,9 +588,9 @@ textarea {
 }
 
 .opt.selected .opt-checkbox {
-  background: var(--brand-green);
-  border-color: var(--brand-green);
-  box-shadow: 0 0 0 3px rgba(30, 157, 109, 0.18);
+  background: var(--brand-blue);
+  border-color: var(--brand-blue);
+  box-shadow: 0 0 0 3px rgba(28, 154, 214, 0.18);
 }
 
 /* ---------- Inputs ---------- */
@@ -599,7 +607,7 @@ textarea {
 }
 
 .field-label .req {
-  color: var(--brand-green);
+  color: var(--brand-blue);
   margin-left: 2px;
 }
 
@@ -618,8 +626,8 @@ textarea {
 }
 
 .field-input:focus {
-  border-color: var(--brand-green);
-  box-shadow: 0 0 0 4px rgba(30, 157, 109, 0.12);
+  border-color: var(--brand-blue);
+  box-shadow: 0 0 0 4px rgba(28, 154, 214, 0.12);
 }
 
 .field-input::placeholder {
@@ -660,8 +668,8 @@ textarea {
 }
 
 .feedback-box:focus {
-  border-color: var(--brand-green);
-  box-shadow: 0 0 0 4px rgba(30, 157, 109, 0.12);
+  border-color: var(--brand-blue);
+  box-shadow: 0 0 0 4px rgba(28, 154, 214, 0.12);
 }
 
 .feedback-hint {
@@ -692,9 +700,9 @@ textarea {
 }
 
 .banner--info {
-  background: var(--brand-green-soft);
-  color: var(--brand-green-dark);
-  border: 1px solid rgba(30, 157, 109, 0.3);
+  background: var(--brand-blue-soft);
+  color: var(--brand-blue-dark);
+  border: 1px solid rgba(28, 154, 214, 0.3);
 }
 
 /* ---------- Loading ---------- */
@@ -708,8 +716,8 @@ textarea {
 }
 
 .spinner--dark {
-  border-color: rgba(30, 157, 109, 0.2);
-  border-top-color: var(--brand-green);
+  border-color: rgba(28, 154, 214, 0.2);
+  border-top-color: var(--brand-blue);
 }
 
 /* ---------- Modal ---------- */
@@ -763,8 +771,20 @@ textarea {
   align-items: center;
   justify-content: center;
   font-size: 42px;
-  background: var(--brand-green-soft);
+  background: var(--brand-blue-soft);
   animation: pop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* 小 i 主視覺（完成彈窗頂部） */
+.modal-hero {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 28px;
+  margin: 0 auto 18px;
+  display: block;
+  border: 2px solid var(--brand-blue-soft);
+  box-shadow: var(--shadow);
 }
 
 .modal-title {
@@ -803,6 +823,14 @@ textarea {
   margin: 12px 0 0;
   font-size: 13px;
   color: var(--text-faint);
+}
+
+.modal-exit {
+  margin-top: 4px;
+  border-color: var(--border-strong);
+  color: var(--text-secondary);
+  font-weight: 600;
+  min-height: 48px;
 }
 
 /* ---------- Admin ---------- */
@@ -867,7 +895,7 @@ textarea {
 }
 
 .admin-search:focus {
-  border-color: var(--brand-green);
+  border-color: var(--brand-blue);
 }
 
 .admin-select {
@@ -924,7 +952,7 @@ table.responses tbody tr {
 }
 
 table.responses tbody tr:hover {
-  background: color-mix(in srgb, var(--brand-green) 5%, transparent);
+  background: color-mix(in srgb, var(--brand-blue) 5%, transparent);
 }
 
 table.responses tbody tr.clickable {
@@ -1024,7 +1052,7 @@ table.responses tbody tr.clickable {
 .stat-card .num {
   font-size: 28px;
   font-weight: 900;
-  color: var(--brand-green-dark);
+  color: var(--brand-blue-dark);
   font-variant-numeric: tabular-nums;
   line-height: 1.2;
 }

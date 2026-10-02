@@ -52,8 +52,9 @@ function ctaFor(q4: Q4Intent): CompletionCopy {
         body:
           '未來如果還有任何關於孩子英語學習的問題，都歡迎再找我們聊聊。',
         ctaTitle: '',
-        ctaLabel: '之後有需要再找我們',
+        ctaLabel: '💬 聯絡小 i 客服',
         ctaKind: 'primary',
+        ctaUrl: 'https://lin.ee/Te4OedD',
       }
   }
 }
@@ -63,7 +64,12 @@ export function CompletionModal({
   q6,
   childName,
   batch,
-}: Pick<Answers, 'q4' | 'q6'> & { childName: string; batch: string }) {
+  onExit,
+}: Pick<Answers, 'q4' | 'q6'> & {
+  childName: string
+  batch: string
+  onExit?: () => void
+}) {
   const [visible, setVisible] = useState(false)
   const cta = ctaFor(q4 as Q4Intent)
   const lineUrl = cta.ctaUrl ?? lineUrlForBatch(batch)
@@ -79,7 +85,11 @@ export function CompletionModal({
   return (
     <div className={`modal-overlay ${visible ? '' : ''}`}>
       <div className="modal">
-        <div className="modal-confetti">🎉</div>
+        <img
+          className="modal-hero"
+          src="./xiaoi-hero.png"
+          alt="小 i 陪孩子一起學習"
+        />
         <h2 className="modal-title">謝謝你陪孩子走完這 7 天！</h2>
         <p className="modal-body">
           {childName ? `${childName} 這 7 天，也許只是孩子英語學習旅程中的一小段，` : '這 7 天，也許只是孩子英語學習旅程中的一小段，'}
@@ -121,6 +131,12 @@ export function CompletionModal({
               {cta.ctaLabel}
             </a>
           </div>
+        )}
+
+        {onExit && (
+          <button className="btn btn--ghost btn--block modal-exit" onClick={onExit}>
+            離開此頁面
+          </button>
         )}
 
         <p className="modal-cta-note">
