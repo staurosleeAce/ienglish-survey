@@ -30,3 +30,7 @@ shots/
 *.sln
 *.sw?
 e2e-out.txt
+
+*.txt
+tests/verify-live.mjs
+tests/diag-*.mjs
