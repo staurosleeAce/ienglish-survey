@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { CompletionModal } from '../components/CompletionModal'
 import {
@@ -36,8 +36,14 @@ const STEP_EYEBROW: Record<string, string> = {
 
 export function SurveyPage() {
   const [params] = useSearchParams()
-  const batch = useMemo(() => normalizeBatch(params.get('batch')), [params])
-  const source = (params.get('src') ?? 'line').slice(0, 40)
+  // 同時相容：真 query（?batch=）與 HashRouter 內 query（#/?batch=）
+  const hash = window.location.hash
+  const qIdx = hash.indexOf('?')
+  const hashParams = new URLSearchParams(qIdx >= 0 ? hash.slice(qIdx + 1) : '')
+  const batchParam = hashParams.get('batch') ?? params.get('batch')
+  const srcParam = hashParams.get('src') ?? params.get('src')
+  const batch = normalizeBatch(batchParam)
+  const source = (srcParam ?? 'line').slice(0, 40)
 
   const [step, setStep] = useState<Step>('landing')
   const [answers, setAnswers] = useState<Answers>(emptyAnswers())
