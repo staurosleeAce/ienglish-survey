@@ -9,7 +9,7 @@ import {
   updateFollowupStatus,
 } from '../lib/api'
 import { exportCSV, exportExcel } from '../lib/excel'
-import { BATCHES, findOptionLabel, INTENT_LABEL, getQuestion } from '../data/survey'
+import { BATCHES, findOptionLabel, findOptionLabels, INTENT_LABEL, getQuestion } from '../data/survey'
 import type { Q4Intent, SurveyRecord } from '../types'
 import { FOLLOWUP_STATUS_LABEL } from '../types'
 import { ResponseDetail } from '../components/ResponseDetail'
@@ -100,7 +100,14 @@ export default function AdminPage() {
       .filter((r) => (statusFilter === 'all' ? true : r.followup_status === statusFilter))
       .filter((r) =>
         s
-          ? [r.parent_name, r.child_name, r.feedback, r.q1_feature]
+          ? [
+              r.parent_name,
+              r.child_name,
+              r.feedback,
+              r.q1_feature,
+              ...(r.q5_objection ?? []),
+              ...(r.q6_followup ?? []),
+            ]
               .join(' ')
               .toLowerCase()
               .includes(s)
@@ -140,7 +147,7 @@ export default function AdminPage() {
       <div className="login-wrap">
         <div className="login-box">
           <span className="brand-logo">🔐</span>
-          <h1 className="login-title">iEnglish 結營問卷 · 後台</h1>
+          <h1 className="login-title">iEnglish 結營問券 · 後台</h1>
           <form onSubmit={handleLogin}>
             <div className="field">
               <label className="field-label">帳號（或 Email）</label>
@@ -192,7 +199,7 @@ export default function AdminPage() {
     <div className="admin-page">
       <div className="admin-shell">
         <div className="admin-topbar">
-          <h1>📊 iEnglish 結營問卷 · 後台</h1>
+          <h1>📊 iEnglish 結營問券 · 後台</h1>
           <div className="admin-actions">
             <button className="btn btn--ghost btn--sm" onClick={refresh}>
               ⟳ 重新整理
@@ -301,7 +308,7 @@ export default function AdminPage() {
         {filtered.length === 0 ? (
           <div className="empty-state">
             <p style={{ margin: 0 }}>
-              {rows.length === 0 ? '目前還沒有問卷資料。' : '沒有符合條件的資料。'}
+              {rows.length === 0 ? '目前還沒有問券資料。' : '沒有符合條件的資料。'}
             </p>
           </div>
         ) : (
@@ -538,8 +545,9 @@ function QDistribution({
   if (!q) return null
   const counts = new Map<string, number>()
   for (const r of rows) {
-    const v = String((r as unknown as Record<string, string>)[qid] ?? '')
-    counts.set(v, (counts.get(v) ?? 0) + 1)
+    const raw = (r as unknown as Record<string, unknown>)[qid] ?? ''
+    const arr = Array.isArray(raw) ? (raw as string[]) : raw ? [String(raw)] : []
+    for (const v of arr) counts.set(v, (counts.get(v) ?? 0) + 1)
   }
   const max = Math.max(1, ...[...counts.values()])
   const sorted = q.options.filter((o) => counts.has(o.key))
@@ -594,10 +602,13 @@ function QDistribution({
   )
 }
 
-function answerLabel(qid: string, key: string) {
+function answerLabel(qid: string, value: string | string[] | null | undefined) {
+  if (Array.isArray(value)) {
+    return findOptionLabels(qid, value)
+  }
   const q = getQuestion(qid)
-  const opt = q?.options.find((o) => o.key === key)
-  return opt ? opt.label : key
+  const opt = q?.options.find((o) => o.key === value)
+  return opt ? opt.label : (value ?? '')
 }
 
 function fmtDate(iso: string) {

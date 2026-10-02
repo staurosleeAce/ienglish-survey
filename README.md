@@ -1,8 +1,8 @@
-# iEnglish 7 日英語閱讀口說營 · 結營問卷
+﻿# iEnglish 7 日英語閱讀口說營 · 結營問券
 
-一個「7 日學習成果回顧 × 家長需求探索 × 購買意願蒐集 × 後續諮詢轉換」的互動式問卷網站。
+一個「7 日學習成果回顧 × 家長需求探索 × 購買意願蒐集 × 後續諮詢轉換」的互動式問券網站。
 
-品牌視覺取自 iEnglish 台灣官方網站（天空藍 `#1c9ad6` + 暖陽黃 `#ffc222`），採 Mobile-first 設計，單頁互動式問卷、逐題呈現、自動前進、完成後依回答顯示不同 CTA。
+品牌視覺取自 iEnglish 台灣官方網站（天空藍 `#1c9ad6` + 暖陽黃 `#ffc222`），採 Mobile-first 設計，單頁互動式問券、逐題呈現、自動前進、完成後依回答顯示不同 CTA。
 
 ---
 
@@ -11,7 +11,7 @@
 | 層 | 技術 |
 | --- | --- |
 | 前端 | React 19 + TypeScript + Vite 8 |
-| 路由 | react-router-dom（`/` 問卷、`/admin` 後台；`/admin` 以 `lazy` 分離載入） |
+| 路由 | react-router-dom（`/` 問券、`/admin` 後台；`/admin` 以 `lazy` 分離載入） |
 | 資料庫 / Auth / API | Supabase（PostgreSQL + PostgREST + Auth + Row Level Security） |
 | 匯出 | SheetJS（xlsx）、手寫 CSV |
 | 圖表 | 純 SVG / CSS（無額外 chart 套件） |
@@ -38,7 +38,7 @@ ienglish-survey/
 ├─ src/
 │  ├─ main.tsx / App.tsx
 │  ├─ styles/index.css       # 設計系統（品牌色、元件、動畫）
-│  ├─ data/survey.ts         # 問卷題目、選項、icon、梯次、LINE URL
+│  ├─ data/survey.ts         # 問券題目、選項、icon、梯次、LINE URL
 │  ├─ types.ts               # Answers / SurveyRecord / 列舉
 │  ├─ lib/
 │  │  ├─ config.ts           # 環境變數
@@ -51,7 +51,7 @@ ienglish-survey/
 │  │  ├─ CompletionModal.tsx # 完成畫面 + 動態 CTA
 │  │  └─ ResponseDetail.tsx  # 後台單筆檢視
 │  └─ pages/
-│     ├─ SurveyPage.tsx      # 前台問卷（Landing → 身份 → Q1..Q6 → 回饋 → 完成）
+│     ├─ SurveyPage.tsx      # 前台問券（Landing → 身份 → Q1..Q6 → 回饋 → 完成）
 │     └─ AdminPage.tsx       # 後台（登入 → Dashboard → 列表 → 匯出）
 └─ tests/                    # Vitest 單元測試
 ```
@@ -83,7 +83,7 @@ VITE_LINE_OFFICIAL_URL=https://lin.ee/dXPhchf
 
 建立兩張表：
 
-**survey_responses**（問卷回應）
+**survey_responses**（問券回應）
 | 欄位 | 說明 |
 | --- | --- |
 | id uuid | PK |
@@ -105,9 +105,9 @@ VITE_LINE_OFFICIAL_URL=https://lin.ee/dXPhchf
 **survey_admins**（管理員 email 白名單）
 
 **RLS 規則**
-- anon / authenticated：只能 `INSERT`（訪客填寫問卷）。
+- anon / authenticated：只能 `INSERT`（訪客填寫問券）。
 - authenticated + email 在 `survey_admins`：可 `SELECT` / `UPDATE`（後台）。
-- 一般訪客即使註冊也無法讀取問卷資料。
+- 一般訪客即使註冊也無法讀取問券資料。
 
 ---
 
@@ -146,10 +146,10 @@ VITE_LINE_OFFICIAL_URL=https://lin.ee/dXPhchf
 **前台**
 - 開場 → 稱呼（不要求真名）→ Q1..Q6 逐題呈現，選項點擊後自動前進（手機友善），有 「第 X / 6 題」進度條。
 - Q2/Q3/Q5 選「其他」時動態顯示文字輸入框（必填）。
-- 開放式回饋（選填）→ 「完成問卷」送出：顯示 loading、防重複提交。
+- 開放式回饋（選填）→ 「完成問券」送出：顯示 loading、防重複提交。
 - 完成 Modal：依 Q4 / Q6 顯示不同 CTA 並導向官方 LINE；暫不考慮者不強迫推銷。
 - 錯誤處理：提交失敗保留內容並提示重試；網路不穩有提示。
-- `?batch=2026-10-06` 可指定活動梯次（未來不同梯次共用同一套問卷）。
+- `?batch=2026-10-06` 可指定活動梯次（未來不同梯次共用同一套問券）。
 - Mobile-first（360/375/390/414px 與 1280/1440px 均正常）。
 
 **後台（/admin）**

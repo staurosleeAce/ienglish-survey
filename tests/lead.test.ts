@@ -15,9 +15,9 @@ function makeRecord(partial: Partial<SurveyRecord>): SurveyRecord {
     q3_expectation: 'daily_habit',
     q3_other: '',
     q4_purchase_intent: 'info',
-    q5_objection: 'time',
+    q5_objection: ['time'],
     q5_other: '',
-    q6_followup: 'none',
+    q6_followup: ['none'],
     feedback: '',
     campaign: '7day_english_camp',
     batch: '2026-10-06',
@@ -50,7 +50,7 @@ describe('followupPriority（跟進優先順序）', () => {
     expect(p.key).toBe('hot')
   })
   it('🔥 Q6 想詢問顧問 → 建議優先聯繫', () => {
-    const p = followupPriority(makeRecord({ q6_followup: 'consult' }))
+    const p = followupPriority(makeRecord({ q6_followup: ['consult'] }))
     expect(p.key).toBe('hot')
   })
   it('🟡 比較看看 → 持續培養', () => {

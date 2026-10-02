@@ -30,7 +30,7 @@ const STEP_EYEBROW: Record<string, string> = {
   q2: '孩子的變化',
   q3: '期待的事',
   q4: '關於下一步',
-  q5: '想先釐清的事',
+  q5: '想先了解的事',
   q6: '我們怎麼陪你',
 }
 
@@ -56,12 +56,17 @@ export function SurveyPage() {
   const question =
     showQuestionIndex >= 0 ? (QUESTIONS[showQuestionIndex] ?? null) : null
 
-  const questionValue = (q: SurveyQuestion | null): string =>
-    q ? String(answers[q.id as keyof Answers] ?? '') : ''
+  const questionValue = (q: SurveyQuestion | null): string[] | string => {
+    if (!q) return []
+    return (answers[q.id as keyof Answers] ?? []) as string[] | string
+  }
+  const isMulti = (q: SurveyQuestion | null): boolean => Boolean(q?.multi)
+  const selectSize = (q: SurveyQuestion | null): number =>
+    isMulti(q) ? (questionValue(q) as string[]).length : questionValue(q) ? 1 : 0
   const otherValue = (q: SurveyQuestion | null): string =>
     q ? String((answers[`${q.id}Other` as keyof Answers] as string) ?? '') : ''
 
-  const setAnswer = (key: keyof Answers, value: string) => {
+  const setAnswer = <K extends keyof Answers>(key: K, value: Answers[K]) => {
     setAnswers((prev) => ({ ...prev, [key]: value }))
     setError('')
   }
@@ -70,12 +75,21 @@ export function SurveyPage() {
     fromIndex + 1 >= QUESTION_STEPS.length ? 'feedback' : (QUESTION_STEPS[fromIndex + 1] as Step)
 
   const validateQuestion = (q: SurveyQuestion): boolean => {
-    const val = questionValue(q)
-    if (!val) {
-      setError('請先選擇一個選項再繼續。')
+    const size = selectSize(q)
+    if (size === 0) {
+      setError('請先至少選擇一個選項再繼續。')
       return false
     }
-    if (val === OPTION_OTHER_KEY && !otherValue(q).trim()) {
+    if (isMulti(q)) {
+      const selected = questionValue(q) as string[]
+      if (selected.includes(OPTION_OTHER_KEY) && !otherValue(q).trim()) {
+        setError('請填寫「其他」的內容再繼續。')
+        return false
+      }
+    } else if (
+      questionValue(q) === OPTION_OTHER_KEY &&
+      !otherValue(q).trim()
+    ) {
       setError('請填寫「其他」的內容再繼續。')
       return false
     }
@@ -90,11 +104,11 @@ export function SurveyPage() {
 
   const handleIdentityNext = () => {
     if (!answers.parentName.trim()) {
-      setError('請告訴我們怎麼稱呼您（例如：Miffy媽咪）')
+      setError('請告訴我們怎麼稱呼您（例如：Amber媽媽）')
       return
     }
     if (!answers.childName.trim()) {
-      setError('請告訴我們孩子的稱呼（例如：Miffy）')
+      setError('請告訴我們孩子的稱呼（例如：Amber）')
       return
     }
     setError('')
@@ -104,6 +118,13 @@ export function SurveyPage() {
   const handleOptionSelect = (key: string) => {
     if (!question) return
     const needsOther = key === OPTION_OTHER_KEY
+    if (isMulti(question)) {
+      const current = questionValue(question) as string[]
+      const has = current.includes(key)
+      const next = has ? current.filter((k) => k !== key) : [...current, key]
+      setAnswer(question.id as keyof Answers, next)
+      return
+    }
     setAnswer(question.id as keyof Answers, key)
     if (needsOther) return
     // 自動進入下一題（手機 UX：不需要一直找「下一步」按鈕）
@@ -147,6 +168,10 @@ export function SurveyPage() {
     setSubmitting(true)
     setError('')
     try {
+      if (!answers.q4) {
+        setError('請先選擇繼續使用的意願再送出。')
+        return
+      }
       const { id } = await submitResponse({
         parentName: answers.parentName,
         childName: answers.childName,
@@ -174,14 +199,14 @@ export function SurveyPage() {
         return
       }
       if (msg === 'supabase_not_configured') {
-        setError('系統尚未完成設定，暫時無法接收問卷。請稍後再試，謝謝。')
+        setError('系統尚未完成設定，暫時無法接收問券。請稍後再試，謝謝。')
         return
       }
       if (msg === 'Failed to fetch' || msg.includes('NetworkError')) {
         setError('網路好像不太穩定，您的內容都已保留，請再送出一次。')
         return
       }
-      setError('不好意思，問卷送出時遇到了一點問題，請稍後再試。')
+      setError('不好意思，問券送出時遇到了一點問題，請稍後再試。')
     } finally {
       setSubmitting(false)
     }
@@ -197,7 +222,7 @@ export function SurveyPage() {
             <div className="landing-hero">
               <div className="landing-art">📖</div>
               <span className="landing-badge">
-                <span className="dot">🕊️</span> 7 日英語閱讀口說營 · 結營問卷
+                <span className="dot">🕊️</span> 7 日英語閱讀口說營 · 結營問券
               </span>
               <h1 className="landing-title">
                 這 7 天，孩子的英語學習
@@ -209,7 +234,7 @@ export function SurveyPage() {
 
             <div className="landing-card">
               <p>
-                這份小問卷大約需要 <strong>1～2 分鐘</strong>
+                這份小問券大約需要 <strong>1～2 分鐘</strong>
                 ，我們想知道：這 7 天裡，您看見了孩子什麼樣的變化？
               </p>
               <p>您的回答，也會幫助我們更了解孩子接下來適合怎麼學習。</p>
@@ -280,11 +305,8 @@ export function SurveyPage() {
               <div style={{ marginTop: 8 }}>
                 <p className="q-eyebrow">先認識您</p>
                 <h2 className="q-title" style={{ margin: 0 }}>
-                  我們沒有要問真實姓名，
-                  <br />
-                  只想知道怎麼稱呼您和孩子 😊
+                  讓小 i 更認識您和孩子
                 </h2>
-                <p className="q-hint">這些資料會用於後續問卷辨識與顯示個人化結果。</p>
 
                 <div style={{ marginTop: 26 }}>
                   <div className="field">
@@ -296,7 +318,7 @@ export function SurveyPage() {
                       type="text"
                       value={answers.parentName}
                       maxLength={40}
-                      placeholder="例如：Miffy媽咪、安安媽咪、樂樂爸爸"
+                      placeholder="例如：Amber媽媽、David爸爸"
                       onChange={(e) => setAnswer('parentName', e.target.value)}
                     />
                   </div>
@@ -309,7 +331,7 @@ export function SurveyPage() {
                       type="text"
                       value={answers.childName}
                       maxLength={40}
-                      placeholder="例如：Miffy、安安、樂樂"
+                      placeholder="例如：Amber、David"
                       onChange={(e) => setAnswer('childName', e.target.value)}
                     />
                   </div>
@@ -323,19 +345,33 @@ export function SurveyPage() {
                 <h2 className="q-title">{question.title}</h2>
                 {question.hint && <p className="q-hint">{question.hint}</p>}
 
+                {isMulti(question) && (
+                  <p className="q-multihint">✓ 可以複選</p>
+                )}
+
                 <div className="q-list">
                   {question.options.map((opt) => {
-                    const selected = questionValue(question) === opt.key
+                    const selected = isMulti(question)
+                      ? (questionValue(question) as string[]).includes(opt.key)
+                      : questionValue(question) === opt.key
                     return (
                       <button
                         key={opt.key}
                         type="button"
-                        className={`opt ${selected ? 'selected' : ''}`}
+                        role={isMulti(question) ? 'checkbox' : 'radio'}
+                        aria-checked={selected}
+                        className={`opt ${selected ? 'selected' : ''} ${isMulti(question) ? 'multi' : ''}`}
                         onClick={() => handleOptionSelect(opt.key)}
                       >
                         <span className="opt-icon">{opt.icon}</span>
                         <span className="opt-label">{opt.label}</span>
-                        <span className="opt-check">✓</span>
+                        {isMulti(question) ? (
+                          <span className="opt-checkbox" aria-hidden="true">
+                            {selected && <span className="opt-checkbox-tick">✓</span>}
+                          </span>
+                        ) : (
+                          <span className="opt-check" aria-hidden="true">✓</span>
+                        )}
                       </button>
                     )
                   })}
@@ -343,30 +379,67 @@ export function SurveyPage() {
                   {question.allowsOther && (
                     <button
                       type="button"
-                      className={`opt ${questionValue(question) === OPTION_OTHER_KEY ? 'selected' : ''}`}
+                      role={isMulti(question) ? 'checkbox' : 'radio'}
+                      aria-checked={
+                        isMulti(question)
+                          ? (questionValue(question) as string[]).includes(OPTION_OTHER_KEY)
+                          : questionValue(question) === OPTION_OTHER_KEY
+                      }
+                      className={`opt ${
+                        isMulti(question)
+                          ? (questionValue(question) as string[]).includes(OPTION_OTHER_KEY)
+                            ? 'selected'
+                            : ''
+                          : questionValue(question) === OPTION_OTHER_KEY
+                            ? 'selected'
+                            : ''
+                      } ${isMulti(question) ? 'multi' : ''}`}
                       onClick={() => handleOptionSelect(OPTION_OTHER_KEY)}
                     >
                       <span className="opt-icon">✏️</span>
                       <span className="opt-label">其他</span>
-                      <span className="opt-check">✓</span>
+                      {isMulti(question) ? (
+                        <span className="opt-checkbox" aria-hidden="true">
+                          {(questionValue(question) as string[]).includes(OPTION_OTHER_KEY) && (
+                            <span className="opt-checkbox-tick">✓</span>
+                          )}
+                        </span>
+                      ) : (
+                        <span className="opt-check" aria-hidden="true">✓</span>
+                      )}
                     </button>
                   )}
                 </div>
 
-                {questionValue(question) === OPTION_OTHER_KEY && (
-                  <div className="field-other">
-                    <input
-                      className="field-input"
-                      type="text"
-                      maxLength={200}
-                      placeholder="請填寫您的想法…"
-                      value={otherValue(question)}
-                      onChange={(e) =>
-                        setAnswer(`${question.id}Other` as keyof Answers, e.target.value)
-                      }
-                    />
-                  </div>
-                )}
+                {isMulti(question)
+                  ? (questionValue(question) as string[]).includes(OPTION_OTHER_KEY) && (
+                      <div className="field-other">
+                        <input
+                          className="field-input"
+                          type="text"
+                          maxLength={200}
+                          placeholder="請填寫您的想法…"
+                          value={otherValue(question)}
+                          onChange={(e) =>
+                            setAnswer(`${question.id}Other` as keyof Answers, e.target.value)
+                          }
+                        />
+                      </div>
+                    )
+                  : questionValue(question) === OPTION_OTHER_KEY && (
+                      <div className="field-other">
+                        <input
+                          className="field-input"
+                          type="text"
+                          maxLength={200}
+                          placeholder="請填寫您的想法…"
+                          value={otherValue(question)}
+                          onChange={(e) =>
+                            setAnswer(`${question.id}Other` as keyof Answers, e.target.value)
+                          }
+                        />
+                      </div>
+                    )}
               </div>
             )}
 
@@ -396,10 +469,10 @@ export function SurveyPage() {
               >
                 {submitting ? (
                   <>
-                    <span className="spinner" /> 問卷整理中…
+                    <span className="spinner" /> 問券整理中…
                   </>
                 ) : (
-                  <>完成問卷 ✨</>
+                  <>完成問券 ✨</>
                 )}
               </button>
             ) : (
@@ -435,7 +508,7 @@ function BrandBar() {
       <span>
         <span className="brand-name">iEnglish 台灣</span>
         <br />
-        <span className="brand-tag">7 日英語閱讀口說營 · 結營問卷</span>
+        <span className="brand-tag">7 日英語閱讀口說營 · 結營問券</span>
       </span>
     </header>
   )

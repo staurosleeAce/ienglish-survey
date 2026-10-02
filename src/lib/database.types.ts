@@ -12,9 +12,9 @@ export type SurveyResponseRow = {
   q3_expectation: string
   q3_other: string | null
   q4_purchase_intent: Q4Intent
-  q5_objection: string
+  q5_objection: string[]
   q5_other: string | null
-  q6_followup: string
+  q6_followup: string[]
   feedback: string | null
   campaign: string
   batch: string

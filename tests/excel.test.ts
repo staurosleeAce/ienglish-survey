@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+﻿import { describe, expect, it } from 'vitest'
 import { toExportRows } from '../src/lib/excel'
 import type { SurveyRecord } from '../src/types'
 
@@ -14,9 +14,9 @@ function makeRecord(partial: Partial<SurveyRecord>): SurveyRecord {
     q3_expectation: 'daily_habit',
     q3_other: '',
     q4_purchase_intent: 'info',
-    q5_objection: 'time',
+    q5_objection: ['time'],
     q5_other: '',
-    q6_followup: 'agent',
+    q6_followup: ['agent'],
     feedback: '孩子很喜歡',
     campaign: '7day_english_camp',
     batch: '2026-10-06',
@@ -28,7 +28,7 @@ function makeRecord(partial: Partial<SurveyRecord>): SurveyRecord {
 }
 
 describe('toExportRows（Excel 匯出欄位）', () => {
-  it('每一列 = 一份問卷，欄位以中文清楚標示', () => {
+  it('每一列 = 一份問券，欄位以中文清楚標示', () => {
     const rows = toExportRows([makeRecord({})])
     expect(rows).toHaveLength(1)
     const r = rows[0]

@@ -73,7 +73,8 @@ export const QUESTIONS: SurveyQuestion[] = [
   {
     id: 'q5',
     field: 'q5_objection',
-    title: '如果目前還沒有決定繼續使用，最希望我們先幫您釐清哪一件事？',
+    title: '如果目前還沒有決定繼續使用，您還有哪些事情想先了解呢？',
+    multi: true,
     options: [
       { key: 'time', label: '每天需要使用多久？如何安排家庭作息？', icon: '⏱️' },
       { key: 'observe', label: '想再觀察孩子的學習狀況', icon: '👀' },
@@ -88,13 +89,14 @@ export const QUESTIONS: SurveyQuestion[] = [
   {
     id: 'q6',
     field: 'q6_followup',
-    title: '如果您希望進一步了解，可以選擇我們接下來怎麼陪您？',
+    title: '如果您希望進一步了解，接下來最希望我們提供哪些協助呢？',
+    multi: true,
     options: [
       { key: 'agent', label: '希望有專人跟我說明正式使用方式', icon: '🤝' },
       { key: 'results', label: '想先看看孩子的 7 日學習成果', icon: '📈' },
       { key: 'plan', label: '想了解適合孩子的正式方案', icon: '📋' },
       { key: 'consult', label: '我有問題想先詢問客服／顧問', icon: '💬' },
-      { key: 'none', label: '暫時不用聯繫，我想自己再想想', icon: '🍃' },
+      { key: 'none', label: '目前想先自己了解看看', icon: '🍃' },
     ],
   },
 ]
@@ -103,6 +105,16 @@ export function findOptionLabel(questionId: string, key: string): string {
   const q = QUESTIONS.find((item) => item.id === questionId)
   const opt = q?.options.find((o) => o.key === key)
   return opt ? opt.label : key
+}
+
+/** 多選欄位：將多個 key 轉成中文 label，以「；」串接 */
+export function findOptionLabels(questionId: string, keys: string[]): string {
+  return (keys ?? [])
+    .map((k) => {
+      if (k === OPTION_OTHER_KEY) return '其他'
+      return findOptionLabel(questionId, k)
+    })
+    .join('；')
 }
 
 export function getQuestion(field: string): SurveyQuestion | undefined {

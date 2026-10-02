@@ -22,6 +22,7 @@ export interface SurveyQuestion {
   hint?: string
   options: SurveyOption[]
   allowsOther?: boolean
+  multi?: boolean
   allowNoSelection?: boolean
 }
 
@@ -33,10 +34,10 @@ export interface Answers {
   q2Other: string
   q3: string
   q3Other: string
-  q4: Q4Intent
-  q5: string
+  q4: Q4Intent | ''
+  q5: string[]
   q5Other: string
-  q6: string
+  q6: string[]
   feedback: string
 }
 
@@ -51,9 +52,9 @@ export interface SurveyRecord {
   q3_expectation: string
   q3_other: string | null
   q4_purchase_intent: Q4Intent
-  q5_objection: string
+  q5_objection: string[]
   q5_other: string | null
-  q6_followup: string
+  q6_followup: string[]
   feedback: string | null
   campaign: string
   batch: string
@@ -84,10 +85,10 @@ export function emptyAnswers(): Answers {
     q2Other: '',
     q3: '',
     q3Other: '',
-    q4: 'not_now',
-    q5: '',
+    q4: '',
+    q5: [],
     q5Other: '',
-    q6: '',
+    q6: [],
     feedback: '',
   }
 }

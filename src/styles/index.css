@@ -1,44 +1,48 @@
-/* ============================================================
-   iEnglish 7日英語閱讀口說營 · 結營問卷 — 設計系統
-   品牌視覺來源：官方網站配色（天空藍 #1c9ad6 / 暖陽黃 #ffc222）
+﻿/* ============================================================
+   iEnglish 7日英語閱讀口說營 · 結營問券 — 設計系統
+   品牌視覺來源：iEnglish 官方（品牌綠主色 × 暖白留白 × 黃橘輔助色）
    ============================================================ */
 
 :root {
-  /* 品牌色 */
-  --brand-blue: #1c9ad6;
-  --brand-blue-deep: #1478a8;
-  --brand-blue-soft: rgba(28, 154, 214, 0.12);
-  --brand-sun: #ffc222;
-  --brand-sun-soft: rgba(255, 194, 34, 0.22);
-  --brand-green: #35b58a;
-  --brand-green-soft: rgba(53, 181, 138, 0.14);
+  /* 品牌色：以 iEnglish 品牌綠為主 */
+  --brand-green: #1e9d6d;
+  --brand-green-dark: #177a55;
+  --brand-green-soft: rgba(30, 157, 109, 0.12);
+  --brand-green-softer: rgba(30, 157, 109, 0.06);
 
-  /* 中性色 */
-  --bg: #f7f8fa;
+  /* 輔助色：黃／橘（少量點綴） */
+  --brand-yellow: #ffc222;
+  --brand-yellow-soft: rgba(255, 194, 34, 0.22);
+  --brand-orange: #ff9f43;
+  --brand-orange-soft: rgba(255, 159, 67, 0.16);
+
+  /* 中性色：暖白背景、深綠灰文字 */
+  --bg-warm: #fbf8f2;
   --surface: #ffffff;
-  --text: #22303a;
-  --text-soft: #5d6b76;
-  --text-faint: #93a0ac;
-  --border: #e3e8ee;
-  --border-strong: #cbd5e0;
+  --surface-warm: #fdfaf4;
+  --text-primary: #1f2d26;
+  --text-secondary: #5b6b62;
+  --text-faint: #93a09a;
+  --border: #e7e2d8;
+  --border-strong: #cfc8ba;
 
-  --shadow-sm: 0 1px 3px rgba(20, 40, 60, 0.06);
-  --shadow: 0 4px 16px rgba(20, 40, 60, 0.08);
-  --shadow-lg: 0 12px 40px rgba(20, 40, 60, 0.16);
+  --shadow-sm: 0 1px 3px rgba(31, 45, 38, 0.06);
+  --shadow: 0 4px 18px rgba(31, 45, 38, 0.09);
+  --shadow-lg: 0 14px 44px rgba(31, 45, 38, 0.16);
 
   --radius-sm: 12px;
   --radius: 18px;
-  --radius-lg: 24px;
+  --radius-lg: 26px;
 
-  --gradient-brand: linear-gradient(135deg, #1c9ad6 0%, #35bdc9 100%);
-  --gradient-warm: linear-gradient(135deg, #ffc222 0%, #ffb95e 100%);
+  --gradient-brand: linear-gradient(135deg, #1e9d6d 0%, #2bb67f 100%);
+  --gradient-warm: linear-gradient(135deg, #ffc222 0%, #ff9f43 100%);
 
-  font-family: 'PingFang TC', 'Microsoft JhengHei', 'Noto Sans TC', 'Source Han Sans TC',
-    system-ui, 'Segoe UI', sans-serif;
+  font-family: 'Noto Sans TC', 'PingFang TC', 'Microsoft JhengHei', system-ui,
+    'Segoe UI', sans-serif;
   font-size: 16px;
   line-height: 1.6;
-  color: var(--text);
-  background: var(--bg);
+  color: var(--text-primary);
+  background: var(--bg-warm);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
@@ -72,19 +76,51 @@ textarea {
 }
 
 ::selection {
-  background: color-mix(in srgb, var(--brand-blue) 25%, transparent);
+  background: color-mix(in srgb, var(--brand-green) 25%, transparent);
 }
 
-/* ---------- Page shell ---------- */
+/* ---------- Page shell（暖白底 + 非常淡的有機形狀裝飾） ---------- */
 .page {
   min-height: 100dvh;
+  position: relative;
   background:
-    radial-gradient(1200px 500px at 80% -10%, rgba(28, 154, 214, 0.09), transparent 60%),
-    radial-gradient(900px 420px at -10% 20%, rgba(255, 194, 34, 0.12), transparent 55%),
-    var(--bg);
+    radial-gradient(1000px 460px at 85% -10%, rgba(30, 157, 109, 0.10), transparent 60%),
+    radial-gradient(760px 380px at -12% 22%, rgba(255, 194, 34, 0.14), transparent 55%),
+    var(--bg-warm);
+  overflow-x: hidden;
+}
+
+.page::before {
+  content: '';
+  position: fixed;
+  top: 8%;
+  right: -70px;
+  width: 220px;
+  height: 220px;
+  border-radius: 46% 54% 58% 42% / 52% 46% 54% 48%;
+  background: rgba(255, 194, 34, 0.10);
+  pointer-events: none;
+  z-index: 0;
+  animation: blobDrift 24s ease-in-out infinite;
+}
+
+.page::after {
+  content: '';
+  position: fixed;
+  bottom: 4%;
+  left: -60px;
+  width: 180px;
+  height: 180px;
+  border-radius: 54% 46% 42% 58% / 46% 56% 44% 54%;
+  background: rgba(30, 157, 109, 0.09);
+  pointer-events: none;
+  z-index: 0;
+  animation: blobDrift 28s ease-in-out infinite reverse;
 }
 
 .app {
+  position: relative;
+  z-index: 1;
   max-width: 640px;
   margin: 0 auto;
   min-height: 100dvh;
@@ -104,14 +140,14 @@ textarea {
 .brand-logo {
   font-size: 26px;
   line-height: 1;
-  filter: drop-shadow(0 2px 4px rgba(28, 154, 214, 0.25));
+  filter: drop-shadow(0 2px 4px rgba(30, 157, 109, 0.22));
 }
 
 .brand-name {
   font-size: 15px;
   font-weight: 800;
   letter-spacing: 0.4px;
-  color: var(--brand-blue-deep);
+  color: var(--brand-green-dark);
 }
 
 .brand-tag {
@@ -144,7 +180,7 @@ textarea {
   background: var(--gradient-brand);
   color: #fff;
   font-size: 58px;
-  box-shadow: 0 12px 34px rgba(28, 154, 214, 0.35);
+  box-shadow: 0 12px 34px rgba(30, 157, 109, 0.35);
   animation: floatIn 0.7s ease;
 }
 
@@ -153,7 +189,7 @@ textarea {
   position: absolute;
   inset: -14px;
   border-radius: 50%;
-  border: 2px dashed rgba(28, 154, 214, 0.35);
+  border: 2px dashed rgba(30, 157, 109, 0.35);
   animation: spinSlow 26s linear infinite;
 }
 
@@ -164,8 +200,8 @@ textarea {
   margin: 22px 0 0;
   padding: 6px 14px;
   border-radius: 999px;
-  background: var(--brand-sun-soft);
-  color: #a37609;
+  background: var(--brand-yellow-soft);
+  color: #9a6b00;
   font-size: 13px;
   font-weight: 700;
   border: 1px solid rgba(255, 194, 34, 0.5);
@@ -173,27 +209,28 @@ textarea {
 
 .landing-title {
   margin: 18px 0 10px;
-  font-size: 28px;
-  font-weight: 900;
-  line-height: 1.4;
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.3;
   letter-spacing: 0.3px;
-  color: var(--text);
+  color: var(--text-primary);
 }
 
 .landing-title .em {
-  color: var(--brand-blue-deep);
+  color: var(--brand-green-dark);
 }
 
 .landing-sub {
   margin: 0 0 14px;
   font-size: 16px;
   font-weight: 600;
-  color: var(--text-soft);
+  line-height: 1.6;
+  color: var(--text-secondary);
 }
 
 .landing-card {
-  margin-top: 10px;
-  padding: 20px 20px 22px;
+  margin-top: 12px;
+  padding: 22px 20px 24px;
   border-radius: var(--radius-lg);
   background: var(--surface);
   border: 1px solid var(--border);
@@ -203,12 +240,17 @@ textarea {
 .landing-card p {
   margin: 0 0 12px;
   font-size: 15.5px;
-  line-height: 1.85;
-  color: var(--text-soft);
+  line-height: 1.7;
+  color: var(--text-secondary);
 }
 
 .landing-card p:last-child {
   margin-bottom: 0;
+}
+
+.landing-card strong {
+  color: var(--brand-green-dark);
+  font-weight: 700;
 }
 
 .landing-note {
@@ -230,12 +272,13 @@ textarea {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  min-height: 54px;
-  padding: 12px 22px;
+  min-height: 56px;
+  padding: 14px 24px;
   border-radius: 999px;
   border: none;
-  font-size: 17px;
-  font-weight: 700;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.3;
   cursor: pointer;
   transition:
     transform 0.1s ease,
@@ -257,29 +300,29 @@ textarea {
 .btn--primary {
   background: var(--gradient-brand);
   color: #fff;
-  box-shadow: 0 8px 22px rgba(28, 154, 214, 0.32);
+  box-shadow: 0 8px 24px rgba(30, 157, 109, 0.32);
 }
 
 .btn--primary:not(:disabled):hover {
   filter: brightness(1.04);
-  box-shadow: 0 10px 26px rgba(28, 154, 214, 0.4);
+  box-shadow: 0 10px 28px rgba(30, 157, 109, 0.4);
 }
 
 .btn--warm {
   background: var(--gradient-warm);
-  color: #6b4a00;
-  box-shadow: 0 8px 22px rgba(255, 194, 34, 0.38);
+  color: #6b3d00;
+  box-shadow: 0 8px 24px rgba(255, 159, 67, 0.36);
 }
 
 .btn--ghost {
   background: var(--surface);
-  color: var(--text);
+  color: var(--text-primary);
   border: 1.5px solid var(--border-strong);
 }
 
 .btn--ghost:not(:disabled):hover {
-  border-color: var(--brand-blue);
-  color: var(--brand-blue-deep);
+  border-color: var(--brand-green);
+  color: var(--brand-green-dark);
 }
 
 .btn--block {
@@ -328,14 +371,14 @@ textarea {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 13px;
+  font-size: 13.5px;
   font-weight: 700;
-  color: var(--text-soft);
+  color: var(--text-secondary);
   margin-bottom: 8px;
 }
 
 .progress-meta .step {
-  color: var(--brand-blue-deep);
+  color: var(--brand-green-dark);
 }
 
 .progress-meta .percent {
@@ -346,7 +389,7 @@ textarea {
 .progress-track {
   height: 10px;
   border-radius: 999px;
-  background: #e9edf2;
+  background: #e9e2d5;
   overflow: hidden;
   position: relative;
 }
@@ -354,13 +397,13 @@ textarea {
 .progress-fill {
   height: 100%;
   border-radius: 999px;
-  background: linear-gradient(90deg, #1c9ad6, #35bdc9);
+  background: linear-gradient(90deg, var(--brand-green-dark), var(--brand-green));
   transition: width 0.45s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
 }
 
 .progress-fill.done {
-  background: linear-gradient(90deg, #35b58a, #7d9de0);
+  background: linear-gradient(90deg, var(--brand-green), var(--brand-green-dark));
 }
 
 .progress-steps {
@@ -373,12 +416,12 @@ textarea {
   flex: 1;
   height: 4px;
   border-radius: 999px;
-  background: #e6ebf0;
+  background: #e6e0d2;
   transition: background 0.3s ease;
 }
 
 .progress-step.on {
-  background: var(--brand-blue);
+  background: var(--brand-green);
 }
 
 .progress-step.done {
@@ -393,29 +436,38 @@ textarea {
 .q-eyebrow {
   font-size: 13px;
   font-weight: 700;
-  color: var(--brand-blue-deep);
+  color: var(--brand-green-dark);
   letter-spacing: 1px;
   margin-bottom: 6px;
 }
 
 .q-title {
   margin: 0;
-  font-size: 22px;
-  font-weight: 800;
-  line-height: 1.55;
+  font-size: 23px;
+  font-weight: 700;
+  line-height: 1.45;
   letter-spacing: 0.2px;
+  color: var(--text-primary);
 }
 
 .q-hint {
   margin: 8px 0 0;
-  font-size: 14px;
-  color: var(--text-soft);
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+.q-multihint {
+  margin: 8px 0 0;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--brand-green);
 }
 
 .q-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 11px;
   margin-top: 18px;
 }
 
@@ -424,7 +476,7 @@ textarea {
   align-items: flex-start;
   gap: 12px;
   width: 100%;
-  padding: 16px 16px;
+  padding: 14px 16px;
   border-radius: var(--radius);
   border: 1.5px solid var(--border);
   background: var(--surface);
@@ -444,13 +496,13 @@ textarea {
 }
 
 .opt:hover {
-  border-color: color-mix(in srgb, var(--brand-blue) 55%, var(--border));
+  border-color: color-mix(in srgb, var(--brand-green) 55%, var(--border));
 }
 
 .opt.selected {
-  border-color: var(--brand-blue);
-  background: linear-gradient(135deg, rgba(28, 154, 214, 0.1), rgba(53, 189, 201, 0.08));
-  box-shadow: 0 6px 20px rgba(28, 154, 214, 0.16);
+  border-color: var(--brand-green);
+  background: linear-gradient(135deg, rgba(30, 157, 109, 0.12), rgba(43, 182, 127, 0.07));
+  box-shadow: 0 6px 22px rgba(30, 157, 109, 0.18);
 }
 
 .opt-icon {
@@ -462,7 +514,7 @@ textarea {
   align-items: center;
   justify-content: center;
   font-size: 22px;
-  background: var(--bg);
+  background: var(--surface-warm);
   border: 1px solid var(--border);
   transition: background 0.18s ease, transform 0.18s ease;
 }
@@ -470,15 +522,16 @@ textarea {
 .opt.selected .opt-icon {
   background: #fff;
   transform: scale(1.05);
-  border-color: color-mix(in srgb, var(--brand-blue) 40%, transparent);
+  border-color: color-mix(in srgb, var(--brand-green) 40%, transparent);
 }
 
 .opt-label {
   flex: 1 1 auto;
-  font-size: 16px;
-  font-weight: 600;
-  line-height: 1.6;
-  padding-top: 7px;
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 1.55;
+  padding-top: 8px;
+  color: var(--text-primary);
 }
 
 .opt-check {
@@ -490,17 +543,46 @@ textarea {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  margin-top: 9px;
+  margin-top: 10px;
   color: transparent;
   font-size: 14px;
   transition: all 0.18s ease;
 }
 
 .opt.selected .opt-check {
-  background: var(--brand-blue);
-  border-color: var(--brand-blue);
+  background: var(--brand-green);
+  border-color: var(--brand-green);
   color: #fff;
   animation: pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ---------- Multi-select checkbox ---------- */
+.opt-checkbox {
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  border: 2px solid var(--border-strong);
+  background: var(--surface);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 10px;
+  transition: all 0.18s ease;
+}
+
+.opt-checkbox-tick {
+  color: #fff;
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1;
+  animation: pop 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.opt.selected .opt-checkbox {
+  background: var(--brand-green);
+  border-color: var(--brand-green);
+  box-shadow: 0 0 0 3px rgba(30, 157, 109, 0.18);
 }
 
 /* ---------- Inputs ---------- */
@@ -513,33 +595,36 @@ textarea {
   font-size: 16px;
   font-weight: 700;
   margin-bottom: 8px;
+  color: var(--text-primary);
 }
 
 .field-label .req {
-  color: var(--brand-blue);
+  color: var(--brand-green);
   margin-left: 2px;
 }
 
 .field-input {
   width: 100%;
-  min-height: 54px;
-  padding: 12px 16px;
+  min-height: 56px;
+  padding: 14px 16px;
   border-radius: var(--radius);
   border: 1.5px solid var(--border);
   background: var(--surface);
-  color: var(--text);
-  font-size: 16px;
+  color: var(--text-primary);
+  font-size: 17px;
+  line-height: 1.5;
   outline: none;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .field-input:focus {
-  border-color: var(--brand-blue);
-  box-shadow: 0 0 0 4px rgba(28, 154, 214, 0.12);
+  border-color: var(--brand-green);
+  box-shadow: 0 0 0 4px rgba(30, 157, 109, 0.12);
 }
 
 .field-input::placeholder {
   color: var(--text-faint);
+  font-size: 16px;
 }
 
 .field-input.error {
@@ -566,17 +651,17 @@ textarea {
   border-radius: var(--radius);
   border: 1.5px solid var(--border);
   background: var(--surface);
-  color: var(--text);
-  font-size: 15.5px;
-  line-height: 1.7;
+  color: var(--text-primary);
+  font-size: 17px;
+  line-height: 1.6;
   resize: vertical;
   outline: none;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .feedback-box:focus {
-  border-color: var(--brand-blue);
-  box-shadow: 0 0 0 4px rgba(28, 154, 214, 0.12);
+  border-color: var(--brand-green);
+  box-shadow: 0 0 0 4px rgba(30, 157, 109, 0.12);
 }
 
 .feedback-hint {
@@ -607,9 +692,9 @@ textarea {
 }
 
 .banner--info {
-  background: var(--brand-blue-soft);
-  color: var(--brand-blue-deep);
-  border: 1px solid rgba(28, 154, 214, 0.3);
+  background: var(--brand-green-soft);
+  color: var(--brand-green-dark);
+  border: 1px solid rgba(30, 157, 109, 0.3);
 }
 
 /* ---------- Loading ---------- */
@@ -623,8 +708,8 @@ textarea {
 }
 
 .spinner--dark {
-  border-color: rgba(28, 154, 214, 0.2);
-  border-top-color: var(--brand-blue);
+  border-color: rgba(30, 157, 109, 0.2);
+  border-top-color: var(--brand-green);
 }
 
 /* ---------- Modal ---------- */
@@ -684,16 +769,17 @@ textarea {
 
 .modal-title {
   margin: 0 0 14px;
-  font-size: 24px;
-  font-weight: 900;
-  line-height: 1.45;
+  font-size: 25px;
+  font-weight: 700;
+  line-height: 1.4;
+  color: var(--text-primary);
 }
 
 .modal-body {
   margin: 0 0 20px;
-  font-size: 15.5px;
-  line-height: 1.9;
-  color: var(--text-soft);
+  font-size: 16px;
+  line-height: 1.75;
+  color: var(--text-secondary);
   white-space: pre-line;
 }
 
@@ -701,15 +787,16 @@ textarea {
   margin: 0 0 18px;
   padding: 18px 16px;
   border-radius: var(--radius);
-  background: color-mix(in srgb, var(--brand-sun) 12%, var(--surface));
+  background: var(--brand-yellow-soft);
   border: 1px solid rgba(255, 194, 34, 0.45);
 }
 
 .modal-cta-title {
   margin: 0 0 10px;
   font-size: 17px;
-  font-weight: 800;
-  line-height: 1.6;
+  font-weight: 700;
+  line-height: 1.55;
+  color: var(--text-primary);
 }
 
 .modal-cta-note {
@@ -721,7 +808,7 @@ textarea {
 /* ---------- Admin ---------- */
 .admin-page {
   min-height: 100dvh;
-  background: var(--bg);
+  background: var(--bg-warm);
 }
 
 .admin-shell {
@@ -745,7 +832,7 @@ textarea {
   margin: 0;
   font-size: 20px;
   font-weight: 800;
-  color: var(--brand-blue-deep);
+  color: var(--brand-green-dark);
 }
 
 .admin-actions {
@@ -780,7 +867,7 @@ textarea {
 }
 
 .admin-search:focus {
-  border-color: var(--brand-blue);
+  border-color: var(--brand-green);
 }
 
 .admin-select {
@@ -820,7 +907,7 @@ table.responses td {
 table.responses th {
   font-size: 12.5px;
   font-weight: 800;
-  color: var(--text-soft);
+  color: var(--text-secondary);
   background: #fbfcfd;
   white-space: nowrap;
   cursor: pointer;
@@ -829,7 +916,7 @@ table.responses th {
 
 table.responses th .sort {
   margin-left: 2px;
-  color: var(--brand-blue);
+  color: var(--brand-green);
 }
 
 table.responses tbody tr {
@@ -837,7 +924,7 @@ table.responses tbody tr {
 }
 
 table.responses tbody tr:hover {
-  background: color-mix(in srgb, var(--brand-blue) 5%, transparent);
+  background: color-mix(in srgb, var(--brand-green) 5%, transparent);
 }
 
 table.responses tbody tr.clickable {
@@ -861,13 +948,13 @@ table.responses tbody tr.clickable {
 }
 
 .status-warm {
-  background: var(--brand-sun-soft);
+  background: var(--brand-yellow-soft);
   color: #a37609;
 }
 
 .status-wait {
-  background: var(--brand-blue-soft);
-  color: var(--brand-blue-deep);
+  background: var(--brand-green-soft);
+  color: var(--brand-green-dark);
 }
 
 .status-low {
@@ -889,13 +976,13 @@ table.responses tbody tr.clickable {
 }
 
 .lead-medium {
-  background: var(--brand-sun-soft);
+  background: var(--brand-yellow-soft);
   color: #a37609;
 }
 
 .lead-followup {
-  background: var(--brand-blue-soft);
-  color: var(--brand-blue-deep);
+  background: var(--brand-green-soft);
+  color: var(--brand-green-dark);
 }
 
 .lead-low {
@@ -906,7 +993,7 @@ table.responses tbody tr.clickable {
 .empty-state {
   padding: 56px 20px;
   text-align: center;
-  color: var(--text-soft);
+  color: var(--text-secondary);
   background: var(--surface);
   border: 1px dashed var(--border-strong);
   border-radius: var(--radius);
@@ -937,7 +1024,7 @@ table.responses tbody tr.clickable {
 .stat-card .num {
   font-size: 28px;
   font-weight: 900;
-  color: var(--brand-blue-deep);
+  color: var(--brand-green-dark);
   font-variant-numeric: tabular-nums;
   line-height: 1.2;
 }
@@ -954,7 +1041,7 @@ table.responses tbody tr.clickable {
   margin-top: 4px;
   font-size: 13px;
   font-weight: 600;
-  color: var(--text-soft);
+  color: var(--text-secondary);
 }
 
 /* ---------- Charts ---------- */
@@ -988,7 +1075,7 @@ table.responses tbody tr.clickable {
 }
 
 .bar-label .name {
-  color: var(--text);
+  color: var(--text-primary);
   font-weight: 600;
 }
 
@@ -1023,7 +1110,7 @@ table.responses tbody tr.clickable {
   align-items: center;
   gap: 6px;
   font-size: 12.5px;
-  color: var(--text-soft);
+  color: var(--text-secondary);
 }
 
 .intent-legend .swatch {
@@ -1041,8 +1128,9 @@ table.responses tbody tr.clickable {
   justify-content: center;
   padding: 24px 20px;
   background:
-    radial-gradient(800px 400px at 90% -10%, rgba(28, 154, 214, 0.1), transparent 60%),
-    var(--bg);
+    radial-gradient(800px 400px at 90% -10%, rgba(30, 157, 109, 0.10), transparent 60%),
+    radial-gradient(600px 300px at 0% 90%, rgba(255, 194, 34, 0.12), transparent 55%),
+    var(--bg-warm);
 }
 
 .login-box {
@@ -1232,6 +1320,48 @@ table.responses tbody tr.clickable {
   }
 }
 
+@keyframes blobDrift {
+  0%,
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate(12px, -16px) rotate(8deg);
+  }
+}
+
+/* ---------- Desktop ---------- */
+@media (min-width: 600px) {
+  .landing-title {
+    font-size: 32px;
+  }
+  .landing-sub {
+    font-size: 17px;
+  }
+  .q-title {
+    font-size: 25px;
+  }
+  .q-eyebrow {
+    font-size: 14px;
+  }
+  .opt {
+    padding: 16px 18px;
+  }
+  .opt-label {
+    font-size: 18px;
+  }
+  .field-input,
+  .feedback-box {
+    font-size: 17px;
+  }
+  .btn {
+    font-size: 18px;
+  }
+  .landing-card p {
+    font-size: 16px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -1241,18 +1371,21 @@ table.responses tbody tr.clickable {
   }
 }
 
-/* 400px 以下保險按鈕不破版 */
+/* 360px 以下保險按鈕不破版 */
 @media (max-width: 359px) {
   .landing-title {
-    font-size: 24px;
+    font-size: 26px;
   }
   .q-title {
-    font-size: 19px;
+    font-size: 20px;
   }
   .opt {
-    padding: 14px 12px;
+    padding: 13px 12px;
   }
   .opt-label {
-    font-size: 15px;
+    font-size: 16px;
+  }
+  .field-input {
+    font-size: 16px;
   }
 }

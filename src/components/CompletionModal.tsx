@@ -8,6 +8,7 @@ interface CompletionCopy {
   ctaTitle: string
   ctaLabel: string
   ctaKind: 'warm' | 'primary'
+  ctaUrl?: string
 }
 
 function ctaFor(q4: Q4Intent): CompletionCopy {
@@ -35,6 +36,7 @@ function ctaFor(q4: Q4Intent): CompletionCopy {
         ctaTitle: '每個孩子的學習狀況都不一樣，如果您還有疑問，歡迎直接告訴我們。',
         ctaLabel: '💬 我要詢問小 i 顧問',
         ctaKind: 'warm',
+        ctaUrl: 'https://lin.ee/Te4OedD',
       }
     case 'want_results':
       return {
@@ -63,8 +65,9 @@ export function CompletionModal({
   batch,
 }: Pick<Answers, 'q4' | 'q6'> & { childName: string; batch: string }) {
   const [visible, setVisible] = useState(false)
-  const cta = ctaFor(q4)
-  const lineUrl = lineUrlForBatch(batch)
+  const cta = ctaFor(q4 as Q4Intent)
+  const lineUrl = cta.ctaUrl ?? lineUrlForBatch(batch)
+  const hasNone = (q6 ?? []).includes('none')
 
   useEffect(() => {
     const t = window.setTimeout(() => setVisible(true), 120)
@@ -99,7 +102,7 @@ export function CompletionModal({
             >
               {cta.ctaLabel}
             </a>
-            {q6 === 'none' && (
+            {hasNone && (
               <p className="modal-cta-note">沒關係，之後想到隨時歡迎再來。</p>
             )}
           </div>
@@ -121,7 +124,7 @@ export function CompletionModal({
         )}
 
         <p className="modal-cta-note">
-          <span>💚</span> 這份問卷的回饋，都會成為小 i 更貼近孩子的養分。
+          <span>💚</span> 這份問券的回饋，都會成為小 i 更貼近孩子的養分。
         </p>
       </div>
     </div>

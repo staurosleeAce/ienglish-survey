@@ -34,3 +34,5 @@ e2e-out.txt
 *.txt
 tests/verify-live.mjs
 tests/diag-*.mjs
+
+tests/e2e-qa.mjs

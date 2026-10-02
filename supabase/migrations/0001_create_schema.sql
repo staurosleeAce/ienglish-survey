@@ -1,5 +1,5 @@
--- ============================================================
--- iEnglish 7日英語閱讀口說營 · 結營問卷 — Supabase 完整 Setup
+﻿-- ============================================================
+-- iEnglish 7日英語閱讀口說營 · 結營問券 — Supabase 完整 Setup
 -- 適用：Dashboard → SQL Editor → New query → 貼上全部 → Run
 --
 -- ⚠️ 此版本會先 DROP 再重建 survey_responses / survey_admins。
@@ -16,7 +16,7 @@ drop table if exists public.survey_admins cascade;
 -- ---------- 延伸模組 ----------
 create extension if not exists "pgcrypto";
 
--- ---------- 問卷回應表 ----------
+-- ---------- 問券回應表 ----------
 create table public.survey_responses (
   id uuid primary key default gen_random_uuid(),
   created_at timestamptz not null default now(),
@@ -28,9 +28,9 @@ create table public.survey_responses (
   q3_expectation text not null,
   q3_other text,
   q4_purchase_intent text not null,
-  q5_objection text not null,
+  q5_objection text[] not null default '{}',
   q5_other text,
-  q6_followup text not null,
+  q6_followup text[] not null default '{}',
   feedback text,
   campaign text not null default '7day_english_camp',
   batch text not null,
@@ -78,7 +78,7 @@ $$;
 alter table public.survey_responses enable row level security;
 alter table public.survey_admins enable row level security;
 
--- 訪客（anon / authenticated）只能 INSERT：填問卷
+-- 訪客（anon / authenticated）只能 INSERT：填問券
 drop policy if exists "survey_anon_insert" on public.survey_responses;
 create policy "survey_anon_insert"
   on public.survey_responses

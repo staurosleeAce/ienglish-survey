@@ -13,13 +13,17 @@ export interface SubmitPayload {
   q3_expectation: string
   q3_other: string
   q4_purchase_intent: Q4Intent
-  q5_objection: string
+  q5_objection: string[]
   q5_other: string
-  q6_followup: string
+  q6_followup: string[]
   feedback: string
   campaign: string
   batch: string
   source: string
+}
+
+function sanitizeArray(items: string[], maxLen: number): string[] {
+  return (items ?? []).map((s) => sanitizeText(s, maxLen)).filter(Boolean)
 }
 
 /**
@@ -63,9 +67,9 @@ export async function submitResponse(
       q3_expectation: sanitizeText(finalPayload.q3_expectation, 60),
       q3_other: sanitizeText(finalPayload.q3_other, 200),
       q4_purchase_intent: finalPayload.q4_purchase_intent,
-      q5_objection: sanitizeText(finalPayload.q5_objection, 60),
+      q5_objection: sanitizeArray(finalPayload.q5_objection, 60),
       q5_other: sanitizeText(finalPayload.q5_other, 200),
-      q6_followup: sanitizeText(finalPayload.q6_followup, 60),
+      q6_followup: sanitizeArray(finalPayload.q6_followup, 60),
       feedback: sanitizeText(finalPayload.feedback, 2000),
       campaign: CAMPAIGN,
       batch: finalPayload.batch,
@@ -152,7 +156,7 @@ export async function fetchStats(): Promise<{
     byIntent[r.q4_purchase_intent] = (byIntent[r.q4_purchase_intent] ?? 0) + 1
     if (d >= startOfToday) today++
     if (d >= startOfWeek) week++
-    if (['agent', 'consult', 'plan'].includes(r.q6_followup)) consulted++
+    if ((r.q6_followup ?? []).some((k) => ['agent', 'consult', 'plan'].includes(k))) consulted++
   }
   return { total: rows.length, today, week, byIntent, consulted }
 }
@@ -189,14 +193,14 @@ export function followupPriority(record: SurveyRecord): {
   label: string
 } {
   const intent = record.q4_purchase_intent
-  const followup = record.q6_followup
-  if (intent === 'info' || followup === 'agent' || followup === 'consult') {
+  const followup = record.q6_followup ?? []
+  if (intent === 'info' || followup.includes('agent') || followup.includes('consult')) {
     return { key: 'hot', label: '建議優先聯繫' }
   }
   if (intent === 'compare' || intent === 'questions') {
     return { key: 'warm', label: '建議持續培養' }
   }
-  if (intent === 'want_results' || followup === 'results' || followup === 'plan') {
+  if (intent === 'want_results' || followup.includes('results') || followup.includes('plan')) {
     return { key: 'wait', label: '等待家長需求' }
   }
   return { key: 'low', label: '暫不跟進' }

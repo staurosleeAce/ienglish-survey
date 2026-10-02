@@ -1,4 +1,4 @@
-/* eslint-disable no-console */
+﻿/* eslint-disable no-console */
 /**
  * 端對端冒煙測試（E2E）— 正式 Supabase 環境
  *
@@ -7,7 +7,7 @@
  *   E2E_SUPABASE_PUBLISHABLE_KEY    publishable key（anon）
  *   E2E_ADMIN_EMAIL / E2E_ADMIN_PASSWORD  後台管理員帳號
  *
- * 流程：家長填寫問卷 → Submit（寫入 Supabase） → 後台登入 → 讀取到這筆資料
+ * 流程：家長填寫問券 → Submit（寫入 Supabase） → 後台登入 → 讀取到這筆資料
  *
  * 執行：
  *   npm run build
@@ -232,7 +232,7 @@ async function main() {
     await page.select('.admin-select', batch)
     await wait(800)
     const hasRow = await page.$$eval('table.responses tbody tr', (els) => els.length)
-    check('後台看到 E2E 寫入的問卷列', hasRow >= 1, `${hasRow} 列`)
+    check('後台看到 E2E 寫入的問券列', hasRow >= 1, `${hasRow} 列`)
 
     await page.type('.admin-search', parentName)
     await wait(600)

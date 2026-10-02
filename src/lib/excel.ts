@@ -1,5 +1,5 @@
 import * as XLSX from 'xlsx'
-import { findOptionLabel, INTENT_LABEL, OPTION_OTHER_KEY } from '../data/survey'
+import { findOptionLabel, findOptionLabels, INTENT_LABEL, OPTION_OTHER_KEY } from '../data/survey'
 import { followupPriority } from './api'
 import type { SurveyRecord } from '../types'
 
@@ -11,11 +11,13 @@ function label(qid: string, key: string): string {
 
 /**
  * 將資料轉成適合客服/業務整理的資料列。
- * 每一列 = 一份問卷，每一欄 = 一個問題（中文欄位名稱）。
+ * 每一列 = 一份問券，每一欄 = 一個問題（中文欄位名稱）。
  */
 export function toExportRows(rows: SurveyRecord[]) {
   return rows.map((r) => {
     const p = followupPriority(r)
+    const q5 = Array.isArray(r.q5_objection) ? r.q5_objection : [r.q5_objection]
+    const q6 = Array.isArray(r.q6_followup) ? r.q6_followup : [r.q6_followup]
     return {
       填寫時間: formatDateTime(r.created_at),
       家長稱呼: r.parent_name,
@@ -26,9 +28,9 @@ export function toExportRows(rows: SurveyRecord[]) {
       期待的改變: label('q3', r.q3_expectation),
       其他回答_期待: r.q3_other ?? '',
       繼續使用意願: intentLabel(r.q4_purchase_intent),
-      主要疑慮: label('q5', r.q5_objection),
+      主要疑慮: findOptionLabels('q5', q5),
       其他回答_疑慮: r.q5_other ?? '',
-      後續協助需求: label('q6', r.q6_followup),
+      後續協助需求: findOptionLabels('q6', q6),
       其他回答: [r.q2_other, r.q3_other, r.q5_other].filter(Boolean).join('；'),
       家長回饋: r.feedback ?? '',
       活動梯次: r.batch,
@@ -63,7 +65,7 @@ export function exportExcel(rows: SurveyRecord[]) {
     { wch: 40 }, { wch: 12 }, { wch: 12 }, { wch: 14 }, { wch: 12 }, { wch: 10 },
   ]
   const wb = XLSX.utils.book_new()
-  XLSX.utils.book_append_sheet(wb, ws, '問卷結果')
+  XLSX.utils.book_append_sheet(wb, ws, '問券結果')
   XLSX.writeFile(wb, `ienglish-7day-survey-${today()}.xlsx`)
 }
 

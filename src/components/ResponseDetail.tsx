@@ -1,4 +1,4 @@
-import { findOptionLabel, INTENT_LABEL } from '../data/survey'
+import { findOptionLabel, findOptionLabels, INTENT_LABEL } from '../data/survey'
 import { followupPriority } from '../lib/api'
 import type { SurveyRecord } from '../types'
 import { FOLLOWUP_STATUS_LABEL } from '../types'
@@ -23,14 +23,14 @@ export function ResponseDetail({
   const q1 = findOptionLabel('q1', record.q1_feature)
   const q2 = findOptionLabel('q2', record.q2_change)
   const q3 = findOptionLabel('q3', record.q3_expectation)
-  const q5 = findOptionLabel('q5', record.q5_objection)
-  const q6 = findOptionLabel('q6', record.q6_followup)
+  const q5 = findOptionLabels('q5', record.q5_objection)
+  const q6 = findOptionLabels('q6', record.q6_followup)
 
   return (
     <div className="drawer-overlay" onClick={onClose}>
       <div className="drawer" onClick={(e) => e.stopPropagation()}>
         <div className="drawer-head">
-          <h2 className="drawer-title">📋 完整問卷資料</h2>
+          <h2 className="drawer-title">📋 完整問券資料</h2>
           <button className="icon-btn" onClick={onClose} aria-label="關閉">
             ✕
           </button>
