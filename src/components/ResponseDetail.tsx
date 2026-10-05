@@ -1,4 +1,4 @@
-import { findOptionLabel, findOptionLabels, INTENT_LABEL } from '../data/survey'
+import { findOptionLabels } from '../data/survey'
 import { followupPriority } from '../lib/api'
 import type { SurveyRecord } from '../types'
 import { FOLLOWUP_STATUS_LABEL } from '../types'
@@ -20,11 +20,6 @@ export function ResponseDetail({
   onClose: () => void
 }) {
   const p = followupPriority(record)
-  const q1 = findOptionLabel('q1', record.q1_feature)
-  const q2 = findOptionLabel('q2', record.q2_change)
-  const q3 = findOptionLabel('q3', record.q3_expectation)
-  const q5 = findOptionLabels('q5', record.q5_objection)
-  const q6 = findOptionLabels('q6', record.q6_followup)
 
   return (
     <div className="drawer-overlay" onClick={onClose}>
@@ -51,26 +46,19 @@ export function ResponseDetail({
             <span className="status-chip status-wait">來源：{record.source || 'line'}</span>
           </div>
 
-          <Section
-            k="填寫時間"
-            v={new Date(record.created_at).toLocaleString('zh-TW')}
-          />
+          <Section k="填寫時間" v={new Date(record.created_at).toLocaleString('zh-TW')} />
           <div className="divider" />
           <Section k="家長稱呼" v={<strong>{record.parent_name}</strong>} />
           <Section k="孩子稱呼" v={<strong>{record.child_name}</strong>} />
           <div className="divider" />
-          <Section k="Q1 · 最符合孩子需求的特色" v={q1} />
-          <Section k="Q2 · 孩子 7 日後的變化" v={q2} />
+          <Section k="Q1 · 最符合孩子需求的特色" v={findOptionLabels('q1', record.q1_feature ?? [])} />
+          {record.q1_other && <Section k="Q1 其他" v={record.q1_other} />}
+          <Section k="Q2 · 孩子 7 日後的變化" v={findOptionLabels('q2', record.q2_change ?? [])} />
           {record.q2_other && <Section k="Q2 其他" v={record.q2_other} />}
-          <Section k="Q3 · 期待的改變" v={q3} />
+          <Section k="Q3 · 期待的改變" v={findOptionLabels('q3', record.q3_expectation ?? [])} />
           {record.q3_other && <Section k="Q3 其他" v={record.q3_other} />}
-          <Section
-            k="Q4 · 繼續使用意願"
-            v={<strong>{INTENT_LABEL[record.q4_purchase_intent]}</strong>}
-          />
-          <Section k="Q5 · 主要疑慮" v={q5} />
-          {record.q5_other && <Section k="Q5 其他" v={record.q5_other} />}
-          <Section k="Q6 · 後續協助需求" v={q6} />
+          <Section k="Q4 · 希望提供的協助" v={findOptionLabels('q4', record.q4_assistance ?? [])} />
+          {record.q4_other && <Section k="Q4 其他" v={record.q4_other} />}
           <div className="divider" />
           <Section
             k="開放式回饋"

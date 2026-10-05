@@ -1,14 +1,3 @@
-export type Q4Intent =
-  | 'info'
-  | 'compare'
-  | 'questions'
-  | 'want_results'
-  | 'not_now'
-
-export type LeadStatus = 'HIGH' | 'MEDIUM' | 'FOLLOW_UP' | 'LOW'
-
-export type FollowupPriority = 'hot' | 'warm' | 'wait' | 'low'
-
 export interface SurveyOption {
   key: string
   label: string
@@ -23,21 +12,19 @@ export interface SurveyQuestion {
   options: SurveyOption[]
   allowsOther?: boolean
   multi?: boolean
-  allowNoSelection?: boolean
 }
 
 export interface Answers {
   parentName: string
   childName: string
-  q1: string
-  q2: string
+  q1: string[]
+  q1Other: string
+  q2: string[]
   q2Other: string
-  q3: string
+  q3: string[]
   q3Other: string
-  q4: Q4Intent | ''
-  q5: string[]
-  q5Other: string
-  q6: string[]
+  q4: string[]
+  q4Other: string
   feedback: string
 }
 
@@ -46,15 +33,14 @@ export interface SurveyRecord {
   created_at: string
   parent_name: string
   child_name: string
-  q1_feature: string
-  q2_change: string
+  q1_feature: string[]
+  q1_other: string | null
+  q2_change: string[]
   q2_other: string | null
-  q3_expectation: string
+  q3_expectation: string[]
   q3_other: string | null
-  q4_purchase_intent: Q4Intent
-  q5_objection: string[]
-  q5_other: string | null
-  q6_followup: string[]
+  q4_assistance: string[]
+  q4_other: string | null
   feedback: string | null
   campaign: string
   batch: string
@@ -80,15 +66,14 @@ export function emptyAnswers(): Answers {
   return {
     parentName: '',
     childName: '',
-    q1: '',
-    q2: '',
+    q1: [],
+    q1Other: '',
+    q2: [],
     q2Other: '',
-    q3: '',
+    q3: [],
     q3Other: '',
-    q4: '',
-    q5: [],
-    q5Other: '',
-    q6: [],
+    q4: [],
+    q4Other: '',
     feedback: '',
   }
 }

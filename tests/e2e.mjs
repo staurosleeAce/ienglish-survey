@@ -108,10 +108,10 @@ async function main() {
     process.exit(0)
   }
 
-  // 使用隨機的 batch 與識別名稱，方便驗證與清理
+  // 使用批次日期（須為 YYYY-MM-DD）與識別名稱，方便驗證與清理
   // 注意：不能包含防 spam 關鍵字（測試/test/spam/http…），否則會被正當擋下
   const stamp = Date.now().toString(36)
-  const batch = `camp-${stamp}`
+  const batch = '2030-01-01'
   const parentName = `家長${stamp}`
   const childName = `寶貝${stamp}`
   const feedbackText = '孩子七天下來每天都主動拿起小i，進步很多，想了解正式方案。'
@@ -173,37 +173,41 @@ async function main() {
     await page.click('.survey-footer .btn--primary')
     await wait(400)
 
-    // ---------- 3. Q1..Q6 ----------
-    for (let i = 0; i < 6; i++) {
+    // ---------- 3. Q1..Q4（全部複選） ----------
+    for (let i = 0; i < 4; i++) {
       const stepLabel = await page.$eval('.progress-meta .step', (el) => el.textContent)
-      check(`第 ${i + 1} 題進度顯示`, (stepLabel ?? '').includes(`${i + 1} / 6`), stepLabel)
-      await page.click('.opt')
-      await wait(700)
+      check(`第 ${i + 1} 題進度顯示`, (stepLabel ?? '').includes(`${i + 1} / 4`), stepLabel)
+      // 複選：點兩個選項
+      await page.evaluate(() => {
+        const opts = document.querySelectorAll('.opt.multi')
+        opts[0]?.click()
+      })
+      await wait(350)
+      await page.evaluate(() => {
+        const opts = document.querySelectorAll('.opt.multi')
+        opts[1]?.click()
+      })
+      await wait(350)
+      await page.click('.survey-footer .btn--primary')
+      await wait(500)
     }
-    await wait(800)
 
     // ---------- 4. 回饋 + 送出 ----------
     const hasFeedback = await page.$('.feedback-box')
     check('到達回饋步驟', !!hasFeedback)
     if (hasFeedback) {
       await page.type('.feedback-box', feedbackText)
+      await wait(5500) // 超過防 spam 門檻
       await page.click('.survey-footer .btn--primary')
       await wait(2500)
     }
 
     const modalTitle = await page.$eval('.modal-title', (el) => el.textContent).catch(() => '')
     check('完成 Modal 顯示', (modalTitle ?? '').includes('謝謝你'), modalTitle)
-
-    const cta = await page
-      .$eval('.modal-cta-card .btn', (el) => el.textContent)
-      .catch(() => '')
-    check('依 Q4 顯示動態 CTA', (cta ?? '').includes('正式使用方式'), cta)
-
-    const lineHref = await page
-      .$eval('.modal-cta-card a', (el) => el.getAttribute('href'))
-      .catch(() => '')
-    // CTA 應使用 VITE_LINE_OFFICIAL_URL（E2E_LINE_URL）
-    check('CTA 導向環境變數設定的 LINE', (lineHref ?? '').includes(ENV.lineUrl.split('/').pop()), lineHref)
+    const hasCta = await page.$('.modal-cta-card a')
+    check('完成彈窗已無任何 CTA / LINE 連結', !hasCta)
+    const exitBtn = await page.$('.modal-exit')
+    check('完成彈窗有「離開此頁面」按鈕', !!exitBtn)
 
     // ---------- 5. 後台登入並讀取 ----------
     await page.goto(`${BASE}/admin`, { waitUntil: 'networkidle0' })

@@ -9,13 +9,15 @@ import {
   updateFollowupStatus,
 } from '../lib/api'
 import { exportCSV, exportExcel } from '../lib/excel'
-import { BATCHES, findOptionLabel, findOptionLabels, INTENT_LABEL, getQuestion } from '../data/survey'
-import type { Q4Intent, SurveyRecord } from '../types'
+import { BATCHES, findOptionLabels, getQuestion } from '../data/survey'
+import type { SurveyRecord } from '../types'
 import { FOLLOWUP_STATUS_LABEL } from '../types'
 import { ResponseDetail } from '../components/ResponseDetail'
 
 type StatusFilter = 'all' | SurveyRecord['followup_status']
 type SortDir = 'asc' | 'desc'
+type Qid = 'q1' | 'q2' | 'q3' | 'q4'
+type LeadFilter = 'all' | 'HIGH' | 'MEDIUM' | 'FOLLOW_UP' | 'LOW'
 
 export default function AdminPage() {
   const [authed, setAuthed] = useState<boolean | null>(null)
@@ -25,7 +27,7 @@ export default function AdminPage() {
   const [rows, setRows] = useState<SurveyRecord[]>([])
   const [search, setSearch] = useState('')
   const [batchFilter, setBatchFilter] = useState('all')
-  const [intentFilter, setIntentFilter] = useState('all')
+  const [leadFilter, setLeadFilter] = useState<LeadFilter>('all')
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
   const [sortDir, setSortDir] = useState<SortDir>('desc')
   const [detail, setDetail] = useState<SurveyRecord | null>(null)
@@ -35,7 +37,6 @@ export default function AdminPage() {
     total: number
     today: number
     week: number
-    byIntent: Record<Q4Intent, number>
     consulted: number
   } | null>(null)
 
@@ -96,7 +97,7 @@ export default function AdminPage() {
     const s = search.trim().toLowerCase()
     return rows
       .filter((r) => (batchFilter === 'all' ? true : r.batch === batchFilter))
-      .filter((r) => (intentFilter === 'all' ? true : r.q4_purchase_intent === intentFilter))
+      .filter((r) => (leadFilter === 'all' ? true : (r.lead_status || '') === leadFilter))
       .filter((r) => (statusFilter === 'all' ? true : r.followup_status === statusFilter))
       .filter((r) =>
         s
@@ -104,9 +105,10 @@ export default function AdminPage() {
               r.parent_name,
               r.child_name,
               r.feedback,
-              r.q1_feature,
-              ...(r.q5_objection ?? []),
-              ...(r.q6_followup ?? []),
+              ...(r.q1_feature ?? []),
+              ...(r.q2_change ?? []),
+              ...(r.q3_expectation ?? []),
+              ...(r.q4_assistance ?? []),
             ]
               .join(' ')
               .toLowerCase()
@@ -117,7 +119,7 @@ export default function AdminPage() {
         const t = new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
         return sortDir === 'asc' ? t : -t
       })
-  }, [rows, search, batchFilter, intentFilter, statusFilter, sortDir])
+  }, [rows, search, batchFilter, leadFilter, statusFilter, sortDir])
 
   const handleExport = async (kind: 'excel' | 'csv') => {
     setExporting(kind)
@@ -131,15 +133,6 @@ export default function AdminPage() {
       setExporting('none')
     }
   }
-
-  const intentOptions = useMemo(
-    () =>
-      (Object.keys(INTENT_LABEL) as Q4Intent[]).map((k) => ({
-        key: k,
-        label: INTENT_LABEL[k],
-      })),
-    [],
-  )
 
   // ---------- 登入畫面 ----------
   if (authed === false) {
@@ -220,19 +213,9 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* 購買意願分布 */}
-        {stats && (
-          <div className="chart-block">
-            <div className="chart-card">
-              <h3>Q4 繼續使用意願分布</h3>
-              <IntentDonut byIntent={stats.byIntent} total={stats.total} />
-            </div>
-          </div>
-        )}
-
         {/* 各題分布 */}
         <div className="chart-block">
-          {(['q1', 'q2', 'q3', 'q5', 'q6'] as const).map((qid) => (
+          {(['q1', 'q2', 'q3', 'q4'] as Qid[]).map((qid) => (
             <QDistribution key={qid} qid={qid} rows={filtered} />
           ))}
         </div>
@@ -262,15 +245,14 @@ export default function AdminPage() {
           <div className="admin-tool-row">
             <select
               className="admin-select"
-              value={intentFilter}
-              onChange={(e) => setIntentFilter(e.target.value)}
+              value={leadFilter}
+              onChange={(e) => setLeadFilter(e.target.value as LeadFilter)}
             >
-              <option value="all">全部購買意願</option>
-              {intentOptions.map((o) => (
-                <option key={o.key} value={o.key}>
-                  {o.label}
-                </option>
-              ))}
+              <option value="all">全部 Lead 分類</option>
+              <option value="HIGH">🔥 HIGH</option>
+              <option value="MEDIUM">🟡 MEDIUM</option>
+              <option value="FOLLOW_UP">🔵 FOLLOW_UP</option>
+              <option value="LOW">⚪ LOW</option>
             </select>
             <select
               className="admin-select"
@@ -322,9 +304,8 @@ export default function AdminPage() {
                   <th>填寫時間</th>
                   <th>家長稱呼</th>
                   <th>孩子稱呼</th>
-                  <th>Q1</th>
-                  <th>Q4 購買意願</th>
-                  <th>Q6 後續需求</th>
+                  <th>Q1 特色</th>
+                  <th>Q4 希望協助</th>
                   <th>梯次</th>
                   <th>Lead</th>
                   <th>跟進排序</th>
@@ -344,9 +325,8 @@ export default function AdminPage() {
                         <strong>{r.parent_name}</strong>
                       </td>
                       <td>{r.child_name}</td>
-                      <td className="fade">{findOptionLabel('q1', r.q1_feature)}</td>
-                      <td>{INTENT_LABEL[r.q4_purchase_intent]}</td>
-                      <td className="fade">{answerLabel('q6', r.q6_followup)}</td>
+                      <td className="fade">{findOptionLabels('q1', r.q1_feature ?? [])}</td>
+                      <td className="fade">{findOptionLabels('q4', r.q4_assistance ?? [])}</td>
                       <td>
                         <span className="status-chip status-wait">{r.batch}</span>
                       </td>
@@ -468,84 +448,12 @@ function PriorityChip({ pKey, label }: { pKey: string; label: string }) {
   )
 }
 
-function IntentDonut({
-  byIntent,
-  total,
-}: {
-  byIntent: Record<Q4Intent, number>
-  total: number
-}) {
-  const colors: Record<Q4Intent, string> = {
-    info: '#35b58a',
-    compare: '#1c9ad6',
-    questions: '#ffc222',
-    want_results: '#7d9de0',
-    not_now: '#c3cdd6',
-  }
-  const order: Q4Intent[] = ['info', 'compare', 'questions', 'want_results', 'not_now']
-  const sum = order.reduce((acc, k) => acc + (byIntent[k] ?? 0), 0)
-  const R = 52
-  const C = 2 * Math.PI * R
-  let offset = 0
-
-  return (
-    <div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
-        <svg width="140" height="140" viewBox="0 0 140 140" style={{ flex: '0 0 auto' }}>
-          <circle cx="70" cy="70" r={R} fill="none" stroke="#eef1f4" strokeWidth="22" />
-          {sum > 0 &&
-            order.map((k) => {
-              const frac = (byIntent[k] ?? 0) / sum
-              const seg = (
-                <circle
-                  key={k}
-                  cx="70"
-                  cy="70"
-                  r={R}
-                  fill="none"
-                  stroke={colors[k]}
-                  strokeWidth="22"
-                  strokeDasharray={`${frac * C} ${C}`}
-                  strokeDashoffset={-offset * C}
-                  strokeLinecap="butt"
-                  transform="rotate(-90 70 70)"
-                />
-              )
-              offset += frac
-              return seg
-            })}
-          <text x="70" y="66" textAnchor="middle" fontWeight="900" fontSize="26" fill="#22303a">
-            {total}
-          </text>
-          <text x="70" y="86" textAnchor="middle" fontSize="11" fill="#93a0ac">
-            填寫數
-          </text>
-        </svg>
-        <div className="intent-legend" style={{ flex: '1 1 180px', justifyContent: 'flex-start' }}>
-          {order.map((k) => (
-            <span key={k}>
-              <span className="swatch" style={{ background: colors[k] }} />
-              {INTENT_LABEL[k]}（{byIntent[k] ?? 0}）
-            </span>
-          ))}
-        </div>
-      </div>
-    </div>
-  )
-}
-
-function QDistribution({
-  qid,
-  rows,
-}: {
-  qid: 'q1' | 'q2' | 'q3' | 'q5' | 'q6'
-  rows: SurveyRecord[]
-}) {
+function QDistribution({ qid, rows }: { qid: Qid; rows: SurveyRecord[] }) {
   const q = getQuestion(qid)
   if (!q) return null
   const counts = new Map<string, number>()
   for (const r of rows) {
-    const raw = (r as unknown as Record<string, unknown>)[qid] ?? ''
+    const raw = (r as unknown as Record<string, unknown>)[q.field] ?? []
     const arr = Array.isArray(raw) ? (raw as string[]) : raw ? [String(raw)] : []
     for (const v of arr) counts.set(v, (counts.get(v) ?? 0) + 1)
   }
@@ -556,8 +464,7 @@ function QDistribution({
     q1: 'Q1 最符合孩子需求的特色',
     q2: 'Q2 孩子 7 日後的變化',
     q3: 'Q3 最期待的改變',
-    q5: 'Q5 主要疑慮',
-    q6: 'Q6 後續協助需求',
+    q4: 'Q4 希望提供的協助',
   }
 
   if (sorted.length === 0) {
@@ -574,8 +481,7 @@ function QDistribution({
       <h3>{titleMap[qid]}</h3>
       {sorted.map((opt) => {
         const cnt = counts.get(opt.key) ?? 0
-        const color =
-          opt.key === 'other' ? '#7d9de0' : `var(--brand-blue)`
+        const color = opt.key === 'other' ? '#7d9de0' : 'var(--brand-blue)'
         return (
           <div className="bar-row" key={opt.key}>
             <div className="bar-label">
@@ -600,15 +506,6 @@ function QDistribution({
       )}
     </div>
   )
-}
-
-function answerLabel(qid: string, value: string | string[] | null | undefined) {
-  if (Array.isArray(value)) {
-    return findOptionLabels(qid, value)
-  }
-  const q = getQuestion(qid)
-  const opt = q?.options.find((o) => o.key === value)
-  return opt ? opt.label : (value ?? '')
 }
 
 function fmtDate(iso: string) {

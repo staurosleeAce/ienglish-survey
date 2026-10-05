@@ -1,37 +1,28 @@
 import * as XLSX from 'xlsx'
-import { findOptionLabel, findOptionLabels, INTENT_LABEL, OPTION_OTHER_KEY } from '../data/survey'
+import { findOptionLabels } from '../data/survey'
 import { followupPriority } from './api'
 import type { SurveyRecord } from '../types'
-
-function label(qid: string, key: string): string {
-  if (!key) return ''
-  if (key === OPTION_OTHER_KEY) return '其他'
-  return findOptionLabel(qid, key)
-}
 
 /**
  * 將資料轉成適合客服/業務整理的資料列。
  * 每一列 = 一份問券，每一欄 = 一個問題（中文欄位名稱）。
+ * 多選題以「；」串接呈現。
  */
 export function toExportRows(rows: SurveyRecord[]) {
   return rows.map((r) => {
     const p = followupPriority(r)
-    const q5 = Array.isArray(r.q5_objection) ? r.q5_objection : [r.q5_objection]
-    const q6 = Array.isArray(r.q6_followup) ? r.q6_followup : [r.q6_followup]
     return {
       填寫時間: formatDateTime(r.created_at),
       家長稱呼: r.parent_name,
       孩子稱呼: r.child_name,
-      最符合孩子需求的特色: label('q1', r.q1_feature),
-      孩子7日後的變化: label('q2', r.q2_change),
+      最符合孩子需求的特色: findOptionLabels('q1', r.q1_feature ?? []),
+      其他回答_特色: r.q1_other ?? '',
+      孩子7日後的變化: findOptionLabels('q2', r.q2_change ?? []),
       其他回答_變化: r.q2_other ?? '',
-      期待的改變: label('q3', r.q3_expectation),
+      期待的改變: findOptionLabels('q3', r.q3_expectation ?? []),
       其他回答_期待: r.q3_other ?? '',
-      繼續使用意願: intentLabel(r.q4_purchase_intent),
-      主要疑慮: findOptionLabels('q5', q5),
-      其他回答_疑慮: r.q5_other ?? '',
-      後續協助需求: findOptionLabels('q6', q6),
-      其他回答: [r.q2_other, r.q3_other, r.q5_other].filter(Boolean).join('；'),
+      希望提供的協助: findOptionLabels('q4', r.q4_assistance ?? []),
+      其他回答_協助: r.q4_other ?? '',
       家長回饋: r.feedback ?? '',
       活動梯次: r.batch,
       資料來源: r.source ?? 'line',
@@ -41,10 +32,6 @@ export function toExportRows(rows: SurveyRecord[]) {
       ID: r.id,
     }
   })
-}
-
-function intentLabel(intent: string): string {
-  return INTENT_LABEL[intent as keyof typeof INTENT_LABEL] ?? intent
 }
 
 function formatDateTime(iso: string) {
@@ -60,9 +47,10 @@ export function exportExcel(rows: SurveyRecord[]) {
   const data = toExportRows(rows)
   const ws = XLSX.utils.json_to_sheet(data)
   ws['!cols'] = [
-    { wch: 18 }, { wch: 14 }, { wch: 14 }, { wch: 34 }, { wch: 34 }, { wch: 30 },
-    { wch: 34 }, { wch: 30 }, { wch: 34 }, { wch: 34 }, { wch: 30 }, { wch: 34 },
-    { wch: 40 }, { wch: 12 }, { wch: 12 }, { wch: 14 }, { wch: 12 }, { wch: 10 },
+    { wch: 18 }, { wch: 14 }, { wch: 14 }, { wch: 34 }, { wch: 26 },
+    { wch: 34 }, { wch: 26 }, { wch: 34 }, { wch: 26 }, { wch: 34 },
+    { wch: 26 }, { wch: 40 }, { wch: 12 }, { wch: 12 }, { wch: 14 },
+    { wch: 12 }, { wch: 10 }, { wch: 10 },
   ]
   const wb = XLSX.utils.book_new()
   XLSX.utils.book_append_sheet(wb, ws, '問券結果')

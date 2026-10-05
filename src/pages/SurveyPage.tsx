@@ -8,30 +8,19 @@ import {
 } from '../data/survey'
 import { submitResponse } from '../lib/api'
 import { looksLikeSpam } from '../lib/sanitize'
-import type { Answers, Q4Intent, SurveyQuestion } from '../types'
+import type { Answers, SurveyQuestion } from '../types'
 import { emptyAnswers } from '../types'
 
-type Step =
-  | 'landing'
-  | 'identity'
-  | 'q1'
-  | 'q2'
-  | 'q3'
-  | 'q4'
-  | 'q5'
-  | 'q6'
-  | 'feedback'
-  | 'done'
+type Step = 'landing' | 'identity' | 'q1' | 'q2' | 'q3' | 'q4' | 'feedback' | 'done'
 
-const QUESTION_STEPS: Step[] = ['q1', 'q2', 'q3', 'q4', 'q5', 'q6']
+const QUESTION_STEPS: Step[] = ['q1', 'q2', 'q3', 'q4']
+const TOTAL_QUESTIONS = QUESTION_STEPS.length
 
 const STEP_EYEBROW: Record<string, string> = {
   q1: '回顧這 7 天',
   q2: '孩子的變化',
   q3: '期待的事',
   q4: '關於下一步',
-  q5: '想先了解的事',
-  q6: '我們怎麼陪你',
 }
 
 export function SurveyPage() {
@@ -56,13 +45,8 @@ export function SurveyPage() {
   const question =
     showQuestionIndex >= 0 ? (QUESTIONS[showQuestionIndex] ?? null) : null
 
-  const questionValue = (q: SurveyQuestion | null): string[] | string => {
-    if (!q) return []
-    return (answers[q.id as keyof Answers] ?? []) as string[] | string
-  }
-  const isMulti = (q: SurveyQuestion | null): boolean => Boolean(q?.multi)
-  const selectSize = (q: SurveyQuestion | null): number =>
-    isMulti(q) ? (questionValue(q) as string[]).length : questionValue(q) ? 1 : 0
+  const questionValue = (q: SurveyQuestion | null): string[] =>
+    q ? ((answers[q.id as keyof Answers] ?? []) as string[]) : []
   const otherValue = (q: SurveyQuestion | null): string =>
     q ? String((answers[`${q.id}Other` as keyof Answers] as string) ?? '') : ''
 
@@ -72,24 +56,15 @@ export function SurveyPage() {
   }
 
   const targetStep = (fromIndex: number): Step =>
-    fromIndex + 1 >= QUESTION_STEPS.length ? 'feedback' : (QUESTION_STEPS[fromIndex + 1] as Step)
+    fromIndex + 1 >= TOTAL_QUESTIONS ? 'feedback' : (QUESTION_STEPS[fromIndex + 1] as Step)
 
   const validateQuestion = (q: SurveyQuestion): boolean => {
-    const size = selectSize(q)
-    if (size === 0) {
-      setError('請先至少選擇一個選項再繼續。')
+    const selected = questionValue(q)
+    if (selected.length === 0) {
+      setError('請至少選擇一個選項再繼續。')
       return false
     }
-    if (isMulti(q)) {
-      const selected = questionValue(q) as string[]
-      if (selected.includes(OPTION_OTHER_KEY) && !otherValue(q).trim()) {
-        setError('請填寫「其他」的內容再繼續。')
-        return false
-      }
-    } else if (
-      questionValue(q) === OPTION_OTHER_KEY &&
-      !otherValue(q).trim()
-    ) {
+    if (selected.includes(OPTION_OTHER_KEY) && !otherValue(q).trim()) {
       setError('請填寫「其他」的內容再繼續。')
       return false
     }
@@ -117,21 +92,10 @@ export function SurveyPage() {
 
   const handleOptionSelect = (key: string) => {
     if (!question) return
-    const needsOther = key === OPTION_OTHER_KEY
-    if (isMulti(question)) {
-      const current = questionValue(question) as string[]
-      const has = current.includes(key)
-      const next = has ? current.filter((k) => k !== key) : [...current, key]
-      setAnswer(question.id as keyof Answers, next)
-      return
-    }
-    setAnswer(question.id as keyof Answers, key)
-    if (needsOther) return
-    // 自動進入下一題（手機 UX：不需要一直找「下一步」按鈕）
-    window.setTimeout(
-      () => setStep(targetStep(showQuestionIndex)),
-      260,
-    )
+    const current = questionValue(question)
+    const has = current.includes(key)
+    const next = has ? current.filter((k) => k !== key) : [...current, key]
+    setAnswer(question.id as keyof Answers, next)
   }
 
   const goNext = () => {
@@ -149,7 +113,7 @@ export function SurveyPage() {
     if (step === 'identity') setStep('landing')
     else if (showQuestionIndex === 0) setStep('identity')
     else if (showQuestionIndex > 0) setStep(QUESTION_STEPS[showQuestionIndex - 1])
-    else if (step === 'feedback') setStep('q6')
+    else if (step === 'feedback') setStep('q4')
   }
 
   const handleSubmit = async () => {
@@ -168,22 +132,17 @@ export function SurveyPage() {
     setSubmitting(true)
     setError('')
     try {
-      if (!answers.q4) {
-        setError('請先選擇繼續使用的意願再送出。')
-        return
-      }
       const { id } = await submitResponse({
         parentName: answers.parentName,
         childName: answers.childName,
         q1_feature: answers.q1,
+        q1_other: answers.q1Other,
         q2_change: answers.q2,
         q2_other: answers.q2Other,
         q3_expectation: answers.q3,
         q3_other: answers.q3Other,
-        q4_purchase_intent: answers.q4 as Q4Intent,
-        q5_objection: answers.q5,
-        q5_other: answers.q5Other,
-        q6_followup: answers.q6,
+        q4_assistance: answers.q4,
+        q4_other: answers.q4Other,
         feedback: answers.feedback,
         batch,
         source,
@@ -247,7 +206,7 @@ export function SurveyPage() {
               </button>
               <p className="landing-note">
                 <span className="dot">●</span> 約需 1～2 分鐘
-                <span className="dot">●</span> 單選題，很快就能完成 · 不需填寫真實姓名
+                <span className="dot">●</span> 皆為複選題，很快就能完成 · 不需填寫真實姓名
               </p>
             </div>
           </main>
@@ -271,15 +230,17 @@ export function SurveyPage() {
                 {step === 'identity' ? (
                   <span className="step">先認識您</span>
                 ) : (
-                  <span className="step">第 {qIndex + 1} / 6 題</span>
+                  <span className="step">
+                    第 {qIndex + 1} / {TOTAL_QUESTIONS} 題
+                  </span>
                 )}
                 <span className="percent">
-                  {step === 'identity' ? '0%' : `${Math.round((qIndex / 6) * 100)}%`}
+                  {step === 'identity' ? '0%' : `${Math.round((qIndex / TOTAL_QUESTIONS) * 100)}%`}
                 </span>
               </div>
               {step === 'identity' ? (
                 <div className="progress-steps">
-                  {Array.from({ length: 6 }).map((_, i) => (
+                  {Array.from({ length: TOTAL_QUESTIONS }).map((_, i) => (
                     <span key={i} className="progress-step" />
                   ))}
                 </div>
@@ -287,7 +248,7 @@ export function SurveyPage() {
                 <div className="progress-track">
                   <div
                     className="progress-fill"
-                    style={{ width: `${(qIndex / 6) * 100}%` }}
+                    style={{ width: `${(qIndex / TOTAL_QUESTIONS) * 100}%` }}
                   />
                 </div>
               )}
@@ -343,35 +304,29 @@ export function SurveyPage() {
               <div style={{ marginTop: 8 }}>
                 <div className="q-eyebrow">{STEP_EYEBROW[question.id]}</div>
                 <h2 className="q-title">{question.title}</h2>
-                {question.hint && <p className="q-hint">{question.hint}</p>}
-
-                {isMulti(question) && (
+                {question.hint ? (
+                  <p className="q-hint">{question.hint}</p>
+                ) : (
                   <p className="q-multihint">✓ 可以複選</p>
                 )}
 
                 <div className="q-list">
                   {question.options.map((opt) => {
-                    const selected = isMulti(question)
-                      ? (questionValue(question) as string[]).includes(opt.key)
-                      : questionValue(question) === opt.key
+                    const selected = questionValue(question).includes(opt.key)
                     return (
                       <button
                         key={opt.key}
                         type="button"
-                        role={isMulti(question) ? 'checkbox' : 'radio'}
+                        role="checkbox"
                         aria-checked={selected}
-                        className={`opt ${selected ? 'selected' : ''} ${isMulti(question) ? 'multi' : ''}`}
+                        className={`opt multi ${selected ? 'selected' : ''}`}
                         onClick={() => handleOptionSelect(opt.key)}
                       >
                         <span className="opt-icon">{opt.icon}</span>
                         <span className="opt-label">{opt.label}</span>
-                        {isMulti(question) ? (
-                          <span className="opt-checkbox" aria-hidden="true">
-                            {selected && <span className="opt-checkbox-tick">✓</span>}
-                          </span>
-                        ) : (
-                          <span className="opt-check" aria-hidden="true">✓</span>
-                        )}
+                        <span className="opt-checkbox" aria-hidden="true">
+                          {selected && <span className="opt-checkbox-tick">✓</span>}
+                        </span>
                       </button>
                     )
                   })}
@@ -379,67 +334,38 @@ export function SurveyPage() {
                   {question.allowsOther && (
                     <button
                       type="button"
-                      role={isMulti(question) ? 'checkbox' : 'radio'}
-                      aria-checked={
-                        isMulti(question)
-                          ? (questionValue(question) as string[]).includes(OPTION_OTHER_KEY)
-                          : questionValue(question) === OPTION_OTHER_KEY
-                      }
-                      className={`opt ${
-                        isMulti(question)
-                          ? (questionValue(question) as string[]).includes(OPTION_OTHER_KEY)
-                            ? 'selected'
-                            : ''
-                          : questionValue(question) === OPTION_OTHER_KEY
-                            ? 'selected'
-                            : ''
-                      } ${isMulti(question) ? 'multi' : ''}`}
+                      role="checkbox"
+                      aria-checked={questionValue(question).includes(OPTION_OTHER_KEY)}
+                      className={`opt multi ${
+                        questionValue(question).includes(OPTION_OTHER_KEY) ? 'selected' : ''
+                      }`}
                       onClick={() => handleOptionSelect(OPTION_OTHER_KEY)}
                     >
                       <span className="opt-icon">✏️</span>
                       <span className="opt-label">其他</span>
-                      {isMulti(question) ? (
-                        <span className="opt-checkbox" aria-hidden="true">
-                          {(questionValue(question) as string[]).includes(OPTION_OTHER_KEY) && (
-                            <span className="opt-checkbox-tick">✓</span>
-                          )}
-                        </span>
-                      ) : (
-                        <span className="opt-check" aria-hidden="true">✓</span>
-                      )}
+                      <span className="opt-checkbox" aria-hidden="true">
+                        {questionValue(question).includes(OPTION_OTHER_KEY) && (
+                          <span className="opt-checkbox-tick">✓</span>
+                        )}
+                      </span>
                     </button>
                   )}
                 </div>
 
-                {isMulti(question)
-                  ? (questionValue(question) as string[]).includes(OPTION_OTHER_KEY) && (
-                      <div className="field-other">
-                        <input
-                          className="field-input"
-                          type="text"
-                          maxLength={200}
-                          placeholder="請填寫您的想法…"
-                          value={otherValue(question)}
-                          onChange={(e) =>
-                            setAnswer(`${question.id}Other` as keyof Answers, e.target.value)
-                          }
-                        />
-                      </div>
-                    )
-                  : questionValue(question) === OPTION_OTHER_KEY && (
-                      <div className="field-other">
-                        <input
-                          className="field-input"
-                          type="text"
-                          maxLength={200}
-                          placeholder="請填寫您的想法…"
-                          value={otherValue(question)}
-                          onChange={(e) =>
-                            setAnswer(`${question.id}Other` as keyof Answers, e.target.value)
-                          }
-                        />
-                      </div>
-                    )}
+                {questionValue(question).includes(OPTION_OTHER_KEY) && (
+                  <div className="field-other">
+                    <input
+                      className="field-input"
+                      type="text"
+                      maxLength={200}
+                      placeholder="請填寫您的想法…"
+                      value={otherValue(question)}
+                      onChange={(e) =>
+                        setAnswer(`${question.id}Other` as keyof Answers, e.target.value)
+                      }
+                    />
+                  </div>
+                )}
               </div>
             )}
 
@@ -491,10 +417,7 @@ export function SurveyPage() {
 
       {step === 'done' && submitted && (
         <CompletionModal
-          q4={answers.q4}
-          q6={answers.q6}
           childName={answers.childName}
-          batch={batch}
           onExit={() => {
             setSubmitted(false)
             setStep('landing')
@@ -510,12 +433,8 @@ export function SurveyPage() {
 function BrandBar() {
   return (
     <header className="brand-bar">
-      <span className="brand-logo">📚</span>
-      <span>
-        <span className="brand-name">iEnglish 台灣</span>
-        <br />
-        <span className="brand-tag">7 日英語閱讀口說營 · 結營問券</span>
-      </span>
+      <img className="brand-logo-img" src="./ienglish-logo.png" alt="iEnglish 台灣" />
+      <span className="brand-tag">7 日英語閱讀口說營 · 結營問券</span>
     </header>
   )
 }

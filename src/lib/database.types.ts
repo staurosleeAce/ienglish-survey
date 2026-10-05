@@ -1,20 +1,17 @@
-import type { Q4Intent } from '../types'
-
-/** 與 supabase/migrations/0001_create_schema.sql 對應的精簡型別（供 TS 使用） */
+/** 與 supabase/migrations/0003_survey_v2.sql 對應的精簡型別（供 TS 使用） */
 export type SurveyResponseRow = {
   id: string
   created_at: string
   parent_name: string
   child_name: string
-  q1_feature: string
-  q2_change: string
+  q1_feature: string[]
+  q1_other: string | null
+  q2_change: string[]
   q2_other: string | null
-  q3_expectation: string
+  q3_expectation: string[]
   q3_other: string | null
-  q4_purchase_intent: Q4Intent
-  q5_objection: string[]
-  q5_other: string | null
-  q6_followup: string[]
+  q4_assistance: string[]
+  q4_other: string | null
   feedback: string | null
   campaign: string
   batch: string

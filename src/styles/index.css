@@ -151,6 +151,16 @@ textarea {
   filter: drop-shadow(0 2px 4px rgba(30, 157, 109, 0.22));
 }
 
+/* 左上角品牌 LOGO 圖片（實際圖片，維持原始比例） */
+.brand-logo-img {
+  height: 36px;
+  width: auto;
+  max-width: 190px;
+  object-fit: contain;
+  display: block;
+  filter: drop-shadow(0 1px 2px rgba(32, 52, 62, 0.12));
+}
+
 .brand-name {
   font-size: 15px;
   font-weight: 800;

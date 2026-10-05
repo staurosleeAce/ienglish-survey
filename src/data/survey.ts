@@ -1,4 +1,4 @@
-import type { Q4Intent, SurveyQuestion } from '../types'
+import type { SurveyQuestion } from '../types'
 
 export const CAMPAIGN = '7day_english_camp'
 
@@ -14,11 +14,13 @@ export function normalizeBatch(raw: string | null | undefined): string {
 
 export const OPTION_OTHER_KEY = 'other'
 
+/** 全部題目皆為複選 */
 export const QUESTIONS: SurveyQuestion[] = [
   {
     id: 'q1',
     field: 'q1_feature',
     title: '這 7 天實際體驗下來，您覺得小 i 哪一個特色最符合孩子目前的需要？',
+    multi: true,
     options: [
       { key: 'smart_level', label: '會依孩子程度，智能安排適合的內容', icon: '🎯' },
       { key: 'daily_habit', label: '每天都有機會接觸英文，慢慢建立習慣', icon: '🗓️' },
@@ -27,11 +29,13 @@ export const QUESTIONS: SurveyQuestion[] = [
       { key: 'self_operate', label: '孩子可以自己操作，不需要家長一直陪在旁邊', icon: '🙌' },
       { key: 'observing', label: '目前還在觀察，還沒有特別明顯的感受', icon: '🔍' },
     ],
+    allowsOther: true,
   },
   {
     id: 'q2',
     field: 'q2_change',
     title: '經過這 7 天，您覺得孩子在哪一方面出現了比較明顯的變化？',
+    multi: true,
     options: [
       { key: 'initiative', label: '願意主動拿起小 i', icon: '🌟' },
       { key: 'willing', label: '比較願意接觸英文', icon: '😊' },
@@ -47,6 +51,7 @@ export const QUESTIONS: SurveyQuestion[] = [
     id: 'q3',
     field: 'q3_expectation',
     title: '如果孩子繼續使用小 i，您最期待它可以幫孩子做到哪一件事？',
+    multi: true,
     options: [
       { key: 'daily_habit', label: '建立每天接觸英文的習慣', icon: '🌅' },
       { key: 'read_more', label: '增加英文閱讀量與詞彙量', icon: '📈' },
@@ -60,44 +65,18 @@ export const QUESTIONS: SurveyQuestion[] = [
   },
   {
     id: 'q4',
-    field: 'q4_purchase_intent',
-    title: '7 日體驗結束後，如果希望孩子繼續使用小 i，您目前的想法比較接近哪一種？',
-    options: [
-      { key: 'info', label: '想進一步了解正式使用方式', icon: '🔍' },
-      { key: 'compare', label: '有興趣，但想先多了解、比較看看', icon: '⚖️' },
-      { key: 'questions', label: '有興趣，但目前還有一些疑問想確認', icon: '❓' },
-      { key: 'want_results', label: '想先看看孩子完整的 7 日成果', icon: '📊' },
-      { key: 'not_now', label: '目前先不考慮', icon: '💤' },
-    ],
-  },
-  {
-    id: 'q5',
-    field: 'q5_objection',
-    title: '如果目前還沒有決定繼續使用，您還有哪些事情想先了解呢？',
+    field: 'q4_assistance',
+    title: '體驗7天後，如果希望孩子繼續使用小i，接下來您最希望我們提供哪一項協助呢？',
+    hint: '（可複選）',
     multi: true,
     options: [
-      { key: 'time', label: '每天需要使用多久？如何安排家庭作息？', icon: '⏱️' },
-      { key: 'observe', label: '想再觀察孩子的學習狀況', icon: '👀' },
-      { key: 'fit', label: '想確認小 i 是否真的適合我的孩子', icon: '🎯' },
-      { key: 'plan_cost', label: '想了解正式方案與費用', icon: '💰' },
-      { key: 'child_willing', label: '孩子目前還沒有很明確的使用意願', icon: '🤷' },
-      { key: 'parent_time', label: '擔心自己沒有時間陪伴孩子', icon: '🕰️' },
-      { key: 'results', label: '想了解孩子 7 日體驗的完整學習成果', icon: '📊' },
+      { key: 'plan_cost', label: '想了解適合孩子的正式方案與費用', icon: '💰' },
+      { key: 'results', label: '想了解孩子7日的學習成果', icon: '📊' },
+      { key: 'agent', label: '希望專人說明正式使用方式', icon: '🤝' },
+      { key: 'consult', label: '還有一些問題，希望與客服／顧問聊聊', icon: '💬' },
+      { key: 'observe', label: '想再觀察孩子一段時間', icon: '👀' },
     ],
     allowsOther: true,
-  },
-  {
-    id: 'q6',
-    field: 'q6_followup',
-    title: '如果您希望進一步了解，接下來最希望我們提供哪些協助呢？',
-    multi: true,
-    options: [
-      { key: 'agent', label: '希望有專人跟我說明正式使用方式', icon: '🤝' },
-      { key: 'results', label: '想先看看孩子的 7 日學習成果', icon: '📈' },
-      { key: 'plan', label: '想了解適合孩子的正式方案', icon: '📋' },
-      { key: 'consult', label: '我有問題想先詢問客服／顧問', icon: '💬' },
-      { key: 'none', label: '目前想先自己了解看看', icon: '🍃' },
-    ],
   },
 ]
 
@@ -117,56 +96,6 @@ export function findOptionLabels(questionId: string, keys: string[]): string {
     .join('；')
 }
 
-export function getQuestion(field: string): SurveyQuestion | undefined {
-  return QUESTIONS.find((q) => q.field === field)
+export function getQuestion(questionId: string): SurveyQuestion | undefined {
+  return QUESTIONS.find((q) => q.id === questionId)
 }
-
-/** Intent 代碼 <-> 顯示用文案 */
-export const INTENT_LABEL: Record<Q4Intent, string> = {
-  info: '想進一步了解正式使用方式',
-  compare: '有興趣，但想先多了解、比較看看',
-  questions: '有興趣，但目前還有一些疑問想確認',
-  want_results: '想先看看孩子完整的 7 日成果',
-  not_now: '目前先不考慮',
-}
-
-export const INTENT_ICON: Record<Q4Intent, string> = {
-  info: '💬',
-  compare: '💬',
-  questions: '💬',
-  want_results: '📊',
-  not_now: '🍃',
-}
-
-/**
- * 官方 LINE 入口（由環境變數設定，非 hard-code）。
- * 不同活動梯次可個別覆寫（擴充點）：VITE_LINE_URL_BATCH_2026-10-06 等。
- */
-export function lineUrlForBatch(batch: string): string {
-  const batchOverride = getBatchOverride(batch)
-  if (batchOverride) return batchOverride
-  return officialLineUrl
-}
-
-const officialLineUrl = envLineUrl()
-const LINE_URL_CACHE = new Map<string, string>()
-
-function envLineUrl(): string {
-  const custom = import.meta.env.VITE_LINE_OFFICIAL_URL as string | undefined
-  return (custom || 'https://lin.ee/dXPhchf').trim()
-}
-
-// 支援依梯次覆寫：VITE_LINE_URL_BATCH_2026-10-06 = https://...
-function getBatchOverride(batch: string): string | null {
-  if (LINE_URL_CACHE.has(batch)) return LINE_URL_CACHE.get(batch)!
-  const key = `VITE_LINE_URL_BATCH_${batch}`
-  const value = import.meta.env[key] as string | undefined
-  if (value && value.trim()) {
-    LINE_URL_CACHE.set(batch, value.trim())
-    return value.trim()
-  }
-  LINE_URL_CACHE.set(batch, '')
-  return null
-}
-
-export { LINE_URL_CACHE }
