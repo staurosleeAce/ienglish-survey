@@ -36,3 +36,4 @@ tests/verify-live.mjs
 tests/diag-*.mjs
 
 tests/e2e-qa.mjs
+tests/e2e-header.mjs

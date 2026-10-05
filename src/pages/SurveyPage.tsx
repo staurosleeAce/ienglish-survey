@@ -433,8 +433,22 @@ export function SurveyPage() {
 function BrandBar() {
   return (
     <header className="brand-bar">
-      <img className="brand-logo-img" src="./ienglish-logo.png" alt="iEnglish 台灣" />
-      <span className="brand-tag">7 日英語閱讀口說營 · 結營問券</span>
+      <img
+        className="brand-logo-img"
+        src="./ienglish-logo.png?v=3"
+        alt="iEnglish 台灣"
+      />
+      <ul className="brand-features" aria-label="iEnglish 特色">
+        <li>
+          <span className="brand-star" aria-hidden="true">⭐</span>AI人工智慧系統
+        </li>
+        <li>
+          <span className="brand-star" aria-hidden="true">⭐</span>海量輸入輸出練習
+        </li>
+        <li>
+          <span className="brand-star" aria-hidden="true">⭐</span>自然而然愛上英語
+        </li>
+      </ul>
     </header>
   )
 }
