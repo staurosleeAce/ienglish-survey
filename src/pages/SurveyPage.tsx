@@ -435,20 +435,9 @@ function BrandBar() {
     <header className="brand-bar">
       <img
         className="brand-logo-img"
-        src="./ienglish-logo.png?v=3"
+        src="./ienglish-logo.png?v=4"
         alt="iEnglish 台灣"
       />
-      <ul className="brand-features" aria-label="iEnglish 特色">
-        <li>
-          <span className="brand-star" aria-hidden="true">⭐</span>AI人工智慧系統
-        </li>
-        <li>
-          <span className="brand-star" aria-hidden="true">⭐</span>海量輸入輸出練習
-        </li>
-        <li>
-          <span className="brand-star" aria-hidden="true">⭐</span>自然而然愛上英語
-        </li>
-      </ul>
     </header>
   )
 }
