@@ -179,7 +179,13 @@ export function SurveyPage() {
           <BrandBar />
           <main className="landing">
             <div className="landing-hero">
-              <div className="landing-art">📖</div>
+              <div className="landing-art">
+                <img
+                  className="landing-art-img"
+                  src="./xiaoi-avatar.png"
+                  alt="小 i"
+                />
+              </div>
               <span className="landing-badge">
                 <span className="dot">🕊️</span> 7 日英語閱讀口說營 · 結營問券
               </span>

@@ -197,19 +197,26 @@ textarea {
   width: 118px;
   height: 118px;
   border-radius: 50%;
-  background: var(--gradient-brand);
-  color: #fff;
-  font-size: 58px;
-  box-shadow: 0 12px 34px rgba(30, 157, 109, 0.35);
+  background: transparent;
   animation: floatIn 0.7s ease;
 }
 
+/* 虛線圓內的圓形圖片（固定不旋轉，只有外圍虛線旋轉） */
+.landing-art-img {
+  display: block;
+  height: 100px;
+  width: auto;
+  max-width: 100px;
+  object-fit: contain;
+}
+
+/* 旋轉虛線圓：顏色依圖片主要色（品牌藍）調整為柔和藍青，維持淡淡環繞、輔助層級 */
 .landing-art::after {
   content: '';
   position: absolute;
   inset: -14px;
   border-radius: 50%;
-  border: 2px dashed rgba(30, 157, 109, 0.35);
+  border: 2px dashed rgba(28, 154, 214, 0.42);
   animation: spinSlow 26s linear infinite;
 }
 
@@ -1377,6 +1384,14 @@ table.responses tbody tr.clickable {
   }
   .brand-logo-img {
     width: clamp(200px, 20vw, 260px);
+  }
+  .landing-art {
+    width: 132px;
+    height: 132px;
+  }
+  .landing-art-img {
+    height: 112px;
+    max-width: 112px;
   }
   .landing-title {
     font-size: 32px;
