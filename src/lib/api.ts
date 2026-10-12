@@ -165,6 +165,25 @@ export async function updateFollowupStatus(
   if (error) throw new Error(error.message)
 }
 
+/**
+ * 刪除單筆問券。
+ * 權限由 Supabase RLS 在資料庫端把關（survey_admin_delete：只有白名單管理員能 DELETE），
+ * 前端只用 publishable key + 登入 session。以唯一 id 精準定位單筆。
+ * 若刪除影響 0 列（權限不足或找不到），視為失敗。
+ */
+export async function deleteResponse(id: string): Promise<void> {
+  const supabase = assertConfigured()
+  const { error, count } = await supabase
+    .from('survey_responses')
+    .delete({ count: 'exact' })
+    .eq('id', id)
+
+  if (error) throw new Error(error.message)
+  if (count === undefined || count === 0) {
+    throw new Error('not_deleted')
+  }
+}
+
 // ---------- 跟進優先順序（後台內部使用，不對外顯示） ----------
 export function followupPriority(record: SurveyRecord): {
   key: 'hot' | 'warm' | 'wait' | 'low'

@@ -15,9 +15,11 @@ function Section({ k, v }: { k: string; v: React.ReactNode }) {
 export function ResponseDetail({
   record,
   onClose,
+  onDelete,
 }: {
   record: SurveyRecord
   onClose: () => void
+  onDelete?: () => void
 }) {
   const p = followupPriority(record)
 
@@ -69,6 +71,19 @@ export function ResponseDetail({
             k="活動 / 資料來源"
             v={`${record.campaign || '7day_english_camp'} · ${record.source || 'line'}`}
           />
+
+          {onDelete && (
+            <>
+              <div className="divider" />
+              <button
+                type="button"
+                className="btn btn--danger btn--block"
+                onClick={onDelete}
+              >
+                刪除這筆問券
+              </button>
+            </>
+          )}
         </div>
       </div>
     </div>

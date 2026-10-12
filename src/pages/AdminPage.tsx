@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   adminIsAuthed,
   adminLogin,
   adminLogout,
+  deleteResponse,
   fetchResponses,
   fetchStats,
   followupPriority,
@@ -13,6 +14,7 @@ import { BATCHES, findOptionLabels, getQuestion } from '../data/survey'
 import type { SurveyRecord } from '../types'
 import { FOLLOWUP_STATUS_LABEL } from '../types'
 import { ResponseDetail } from '../components/ResponseDetail'
+import { ConfirmDeleteModal } from '../components/ConfirmDeleteModal'
 
 type StatusFilter = 'all' | SurveyRecord['followup_status']
 type SortDir = 'asc' | 'desc'
@@ -33,6 +35,16 @@ export default function AdminPage() {
   const [detail, setDetail] = useState<SurveyRecord | null>(null)
   const [loading, setLoading] = useState(true)
   const [exporting, setExporting] = useState<'none' | 'excel' | 'csv'>('none')
+  const [confirmDelete, setConfirmDelete] = useState<SurveyRecord | null>(null)
+  const [deleting, setDeleting] = useState(false)
+  const [notice, setNotice] = useState<{ type: 'ok' | 'err'; text: string } | null>(null)
+  const noticeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const showNotice = useCallback((type: 'ok' | 'err', text: string) => {
+    if (noticeTimer.current) clearTimeout(noticeTimer.current)
+    setNotice({ type, text })
+    noticeTimer.current = setTimeout(() => setNotice(null), 4000)
+  }, [])
   const [stats, setStats] = useState<{
     total: number
     today: number
@@ -134,6 +146,29 @@ export default function AdminPage() {
     }
   }
 
+  const handleConfirmDelete = async () => {
+    if (!confirmDelete || deleting) return
+    setDeleting(true)
+    try {
+      await deleteResponse(confirmDelete.id)
+      setConfirmDelete(null)
+      setDetail(null)
+      // 以 Supabase 實際資料重新載入（列表／統計／圖表／篩選全數同步）
+      await refresh()
+      showNotice('ok', '已成功刪除這筆問券資料。')
+    } catch {
+      showNotice('err', '刪除失敗，資料尚未移除，請稍後再試或確認管理員權限。')
+    } finally {
+      setDeleting(false)
+    }
+  }
+
+  useEffect(() => {
+    return () => {
+      if (noticeTimer.current) clearTimeout(noticeTimer.current)
+    }
+  }, [])
+
   // ---------- 登入畫面 ----------
   if (authed === false) {
     return (
@@ -202,6 +237,12 @@ export default function AdminPage() {
             </button>
           </div>
         </div>
+
+        {notice && (
+          <div className={`notice notice--${notice.type}`} role="status">
+            {notice.type === 'ok' ? '✅' : '⚠️'} {notice.text}
+          </div>
+        )}
 
         {/* 統計卡片 */}
         {stats && (
@@ -310,6 +351,7 @@ export default function AdminPage() {
                   <th>Lead</th>
                   <th>跟進排序</th>
                   <th>跟進狀態</th>
+                  <th>操作</th>
                 </tr>
               </thead>
               <tbody>
@@ -356,6 +398,18 @@ export default function AdminPage() {
                           )}
                         </select>
                       </td>
+                      <td>
+                        <button
+                          type="button"
+                          className="row-delete"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setConfirmDelete(r)
+                          }}
+                        >
+                          刪除
+                        </button>
+                      </td>
                     </tr>
                   )
                 })}
@@ -371,8 +425,19 @@ export default function AdminPage() {
       </div>
 
       {detail && (
-        <ResponseDetail record={detail} onClose={() => setDetail(null)} />
+        <ResponseDetail
+          record={detail}
+          onClose={() => setDetail(null)}
+          onDelete={() => setConfirmDelete(detail)}
+        />
       )}
+
+      <ConfirmDeleteModal
+        record={confirmDelete}
+        deleting={deleting}
+        onCancel={() => setConfirmDelete(null)}
+        onConfirm={handleConfirmDelete}
+      />
     </div>
   )
 

@@ -38,3 +38,4 @@ tests/diag-*.mjs
 tests/e2e-qa.mjs
 tests/e2e-header.mjs
 tests/e2e-hero.mjs
+tests/e2e-delete.mjs
