@@ -6,6 +6,7 @@ function makeRecord(partial: Partial<SurveyRecord>): SurveyRecord {
   return {
     id: 'r1',
     created_at: '2026-10-06T10:30:00Z',
+    project_id: '7day_english_camp',
     parent_name: 'Amber媽媽',
     child_name: 'Amber',
     q1_feature: ['smart_level'],
@@ -22,6 +23,12 @@ function makeRecord(partial: Partial<SurveyRecord>): SurveyRecord {
     source: 'line',
     followup_status: 'new',
     lead_status: 'MEDIUM',
+    super_parent_name: null,
+    super_line_name: null,
+    super_child_ages: null,
+    super_stuck_points: null,
+    super_source: null,
+    super_feedback: null,
     ...partial,
   }
 }

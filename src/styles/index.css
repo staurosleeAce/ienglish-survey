@@ -1004,6 +1004,31 @@ textarea {
   flex-wrap: wrap;
 }
 
+.project-tabs {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.project-tab {
+  min-height: 36px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.project-tab.active {
+  border-color: var(--brand-blue);
+  background: var(--brand-blue-soft);
+  color: var(--brand-blue-dark);
+}
+
 .admin-tools {
   display: flex;
   flex-direction: column;
@@ -1405,6 +1430,129 @@ table.responses tbody tr.clickable {
 
 .icon-btn:active {
   transform: scale(0.94);
+}
+
+/* ---------- 平凡爸媽很 Super 專案 ---------- */
+.super-project {
+  --super-cream: #f4eadb;
+  --super-cream-light: #fbf6ee;
+  --super-earth: #8d5f46;
+  --super-earth-dark: #5b3c2e;
+  --super-ochre: #d79d52;
+  background:
+    radial-gradient(760px 360px at 90% -8%, rgba(215, 157, 82, 0.18), transparent 60%),
+    radial-gradient(700px 360px at -10% 20%, rgba(141, 95, 70, 0.10), transparent 60%),
+    var(--super-cream-light);
+}
+
+.super-project .app {
+  color: var(--super-earth-dark);
+}
+
+.super-hero {
+  padding-top: 20px;
+}
+
+.super-badge {
+  display: block;
+  width: min(68vw, 250px);
+  max-height: 250px;
+  object-fit: contain;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+}
+
+.super-badge-small {
+  width: 120px;
+  max-height: 120px;
+  margin-bottom: 14px;
+}
+
+.super-project .landing-title .em {
+  color: var(--super-earth);
+}
+
+.super-project .landing-badge {
+  background: rgba(215, 157, 82, 0.16);
+  border-color: rgba(215, 157, 82, 0.42);
+  color: var(--super-earth-dark);
+}
+
+.super-project .landing-card {
+  background: rgba(255, 255, 255, 0.76);
+  border-color: rgba(141, 95, 70, 0.18);
+}
+
+.super-project .btn--primary {
+  background: linear-gradient(135deg, var(--super-earth), #b87e58);
+  box-shadow: 0 8px 24px rgba(141, 95, 70, 0.25);
+}
+
+.super-project .btn--primary:not(:disabled):hover {
+  box-shadow: 0 10px 28px rgba(141, 95, 70, 0.32);
+}
+
+.super-project .progress-fill {
+  background: linear-gradient(90deg, var(--super-earth), var(--super-ochre));
+}
+
+.super-project .q-eyebrow,
+.super-project .progress-meta .step {
+  color: var(--super-earth);
+}
+
+.super-project .opt.selected {
+  border-color: var(--super-earth);
+  background: rgba(215, 157, 82, 0.12);
+  box-shadow: 0 6px 20px rgba(141, 95, 70, 0.13);
+}
+
+.super-project .opt.selected .opt-checkbox {
+  background: var(--super-earth);
+  border-color: var(--super-earth);
+  box-shadow: 0 0 0 3px rgba(141, 95, 70, 0.14);
+}
+
+.super-header {
+  justify-content: flex-start;
+  padding-bottom: 8px;
+}
+
+.super-header-badge {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+  border-radius: 50%;
+}
+
+.super-header-name {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--super-earth-dark);
+}
+
+.super-brand-line {
+  margin-top: 16px !important;
+  color: var(--super-earth) !important;
+  font-weight: 800;
+}
+
+.super-notes {
+  margin: 18px 0 22px;
+  padding-left: 20px;
+  text-align: left;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.75;
+}
+
+.super-community-missing {
+  padding: 12px;
+  border-radius: var(--radius-sm);
+  background: rgba(215, 157, 82, 0.14);
+  color: var(--super-earth-dark);
+  font-size: 14px;
+  font-weight: 700;
 }
 
 /* ---------- Animations ---------- */

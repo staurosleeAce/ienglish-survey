@@ -15,11 +15,40 @@ import type { SurveyRecord } from '../types'
 import { FOLLOWUP_STATUS_LABEL } from '../types'
 import { ResponseDetail } from '../components/ResponseDetail'
 import { ConfirmDeleteModal } from '../components/ConfirmDeleteModal'
+import { ORIGINAL_PROJECT_ID, PROJECT_TABS, SUPER_PROJECT, SUPER_PROJECT_ID } from '../data/projects'
 
 type StatusFilter = 'all' | SurveyRecord['followup_status']
 type SortDir = 'asc' | 'desc'
 type Qid = 'q1' | 'q2' | 'q3' | 'q4'
 type LeadFilter = 'all' | 'HIGH' | 'MEDIUM' | 'FOLLOW_UP' | 'LOW'
+
+function isSuperRecord(record: SurveyRecord) {
+  return record.project_id === SUPER_PROJECT_ID
+}
+
+function recordParent(record: SurveyRecord) {
+  return isSuperRecord(record) ? (record.super_parent_name ?? '') : record.parent_name
+}
+
+function recordChild(record: SurveyRecord) {
+  return isSuperRecord(record) ? (record.super_line_name ?? '') : record.child_name
+}
+
+function recordSearchValues(record: SurveyRecord) {
+  return [
+    recordParent(record),
+    recordChild(record),
+    record.feedback,
+    record.super_feedback,
+    ...(record.q1_feature ?? []),
+    ...(record.q2_change ?? []),
+    ...(record.q3_expectation ?? []),
+    ...(record.q4_assistance ?? []),
+    ...(record.super_child_ages ?? []),
+    ...(record.super_stuck_points ?? []),
+    record.super_source,
+  ]
+}
 
 export default function AdminPage() {
   const [authed, setAuthed] = useState<boolean | null>(null)
@@ -31,6 +60,7 @@ export default function AdminPage() {
   const [batchFilter, setBatchFilter] = useState('all')
   const [leadFilter, setLeadFilter] = useState<LeadFilter>('all')
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
+  const [projectId, setProjectId] = useState(ORIGINAL_PROJECT_ID)
   const [sortDir, setSortDir] = useState<SortDir>('desc')
   const [detail, setDetail] = useState<SurveyRecord | null>(null)
   const [loading, setLoading] = useState(true)
@@ -52,11 +82,13 @@ export default function AdminPage() {
     consulted: number
   } | null>(null)
 
-  const refresh = useCallback(async () => {
-    const [list, s] = await Promise.all([fetchResponses(), fetchStats()])
+  const refreshProject = useCallback(async (id: string) => {
+    const [list, s] = await Promise.all([fetchResponses(id), fetchStats(id)])
     setRows(list)
     setStats(s)
   }, [])
+
+  const refresh = useCallback(() => refreshProject(projectId), [projectId, refreshProject])
 
   useEffect(() => {
     let alive = true
@@ -108,20 +140,14 @@ export default function AdminPage() {
   const filtered = useMemo(() => {
     const s = search.trim().toLowerCase()
     return rows
+      .filter((r) => r.project_id === projectId)
       .filter((r) => (batchFilter === 'all' ? true : r.batch === batchFilter))
       .filter((r) => (leadFilter === 'all' ? true : (r.lead_status || '') === leadFilter))
       .filter((r) => (statusFilter === 'all' ? true : r.followup_status === statusFilter))
       .filter((r) =>
         s
-          ? [
-              r.parent_name,
-              r.child_name,
-              r.feedback,
-              ...(r.q1_feature ?? []),
-              ...(r.q2_change ?? []),
-              ...(r.q3_expectation ?? []),
-              ...(r.q4_assistance ?? []),
-            ]
+          ? recordSearchValues(r)
+              .filter(Boolean)
               .join(' ')
               .toLowerCase()
               .includes(s)
@@ -131,12 +157,12 @@ export default function AdminPage() {
         const t = new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
         return sortDir === 'asc' ? t : -t
       })
-  }, [rows, search, batchFilter, leadFilter, statusFilter, sortDir])
+  }, [rows, search, batchFilter, leadFilter, statusFilter, sortDir, projectId])
 
   const handleExport = async (kind: 'excel' | 'csv') => {
     setExporting(kind)
     try {
-      const data = filtered.length ? filtered : await fetchResponses()
+      const data = filtered.length ? filtered : await fetchResponses(projectId)
       if (kind === 'excel') exportExcel(data)
       else exportCSV(data)
     } catch (err) {
@@ -220,14 +246,40 @@ export default function AdminPage() {
   }
 
   // ---------- Dashboard ----------
-  const batches = ['all', ...BATCHES]
+  const projectBatches = rows.filter((r) => r.project_id === projectId).map((r) => r.batch)
+  const batches = ['all', ...new Set([...BATCHES, ...projectBatches])]
   if (!batches.includes(batchFilter)) batches.push(batchFilter)
 
   return (
     <div className="admin-page">
       <div className="admin-shell">
         <div className="admin-topbar">
-          <h1>📊 iEnglish 結營問券 · 後台</h1>
+          <div>
+            <h1>📊 問券管理後台</h1>
+            <div className="project-tabs" role="tablist" aria-label="問券專案">
+              {PROJECT_TABS.map((project) => (
+                <button
+                  key={project.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={projectId === project.id}
+                  className={`project-tab ${projectId === project.id ? 'active' : ''}`}
+                  onClick={() => {
+                    setProjectId(project.id)
+                    setBatchFilter('all')
+                    setLeadFilter('all')
+                    setStatusFilter('all')
+                    setSearch('')
+                    setDetail(null)
+                    setLoading(true)
+                    refreshProject(project.id).finally(() => setLoading(false))
+                  }}
+                >
+                  {project.name}
+                </button>
+              ))}
+            </div>
+          </div>
           <div className="admin-actions">
             <button className="btn btn--ghost btn--sm" onClick={refresh}>
               ⟳ 重新整理
@@ -256,7 +308,7 @@ export default function AdminPage() {
 
         {/* 各題分布 */}
         <div className="chart-block">
-          {(['q1', 'q2', 'q3', 'q4'] as Qid[]).map((qid) => (
+          {(projectId === SUPER_PROJECT_ID ? (['q3', 'q4'] as Qid[]) : (['q1', 'q2', 'q3', 'q4'] as Qid[])).map((qid) => (
             <QDistribution key={qid} qid={qid} rows={filtered} />
           ))}
         </div>
@@ -364,11 +416,19 @@ export default function AdminPage() {
                       </td>
                       <td>{fmtDate(r.created_at)}</td>
                       <td>
-                        <strong>{r.parent_name}</strong>
+                        <strong>{recordParent(r)}</strong>
                       </td>
-                      <td>{r.child_name}</td>
-                      <td className="fade">{findOptionLabels('q1', r.q1_feature ?? [])}</td>
-                      <td className="fade">{findOptionLabels('q4', r.q4_assistance ?? [])}</td>
+                      <td>{recordChild(r)}</td>
+                      <td className="fade">
+                        {isSuperRecord(r)
+                          ? (r.super_child_ages ?? []).join('、')
+                          : findOptionLabels('q1', r.q1_feature ?? [])}
+                      </td>
+                      <td className="fade">
+                        {isSuperRecord(r)
+                          ? (r.super_stuck_points ?? []).join('、')
+                          : findOptionLabels('q4', r.q4_assistance ?? [])}
+                      </td>
                       <td>
                         <span className="status-chip status-wait">{r.batch}</span>
                       </td>
@@ -514,22 +574,30 @@ function PriorityChip({ pKey, label }: { pKey: string; label: string }) {
 }
 
 function QDistribution({ qid, rows }: { qid: Qid; rows: SurveyRecord[] }) {
-  const q = getQuestion(qid)
+  const superMode = rows.some((r) => r.project_id === SUPER_PROJECT_ID)
+  const q = superMode
+    ? SUPER_PROJECT.questions.find((item) => item.id === qid)
+    : getQuestion(qid)
   if (!q) return null
   const counts = new Map<string, number>()
   for (const r of rows) {
-    const raw = (r as unknown as Record<string, unknown>)[q.field] ?? []
+    const sourceField = 'field' in q ? q.field : qid
+    const raw = superMode
+      ? qid === 'q3'
+        ? r.super_child_ages ?? []
+        : r.super_stuck_points ?? []
+      : (r as unknown as Record<string, unknown>)[sourceField] ?? []
     const arr = Array.isArray(raw) ? (raw as string[]) : raw ? [String(raw)] : []
     for (const v of arr) counts.set(v, (counts.get(v) ?? 0) + 1)
   }
   const max = Math.max(1, ...[...counts.values()])
-  const sorted = q.options.filter((o) => counts.has(o.key))
+  const sorted = (q.options ?? []).filter((o) => counts.has(o.key))
 
   const titleMap: Record<string, string> = {
     q1: 'Q1 最符合孩子需求的特色',
     q2: 'Q2 孩子 7 日後的變化',
     q3: 'Q3 最期待的改變',
-    q4: 'Q4 希望提供的協助',
+    q4: superMode ? '最近陪孩子最常卡住的地方' : 'Q4 希望提供的協助',
   }
 
   if (sorted.length === 0) {
@@ -564,7 +632,7 @@ function QDistribution({ qid, rows }: { qid: Qid; rows: SurveyRecord[] }) {
           </div>
         )
       })}
-      {q.allowsOther && counts.has('other') && (
+      {'allowsOther' in q && q.allowsOther && counts.has('other') && (
         <p style={{ fontSize: 12.5, color: '#93a0ac', margin: 0 }}>
           其他：{(counts.get('other') ?? 0)} 份
         </p>

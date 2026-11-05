@@ -1,4 +1,5 @@
 import { findOptionLabels } from '../data/survey'
+import { SUPER_PROJECT_ID } from '../data/projects'
 import { followupPriority } from '../lib/api'
 import type { SurveyRecord } from '../types'
 import { FOLLOWUP_STATUS_LABEL } from '../types'
@@ -22,6 +23,7 @@ export function ResponseDetail({
   onDelete?: () => void
 }) {
   const p = followupPriority(record)
+  const isSuper = record.project_id === SUPER_PROJECT_ID
 
   return (
     <div className="drawer-overlay" onClick={onClose}>
@@ -50,21 +52,31 @@ export function ResponseDetail({
 
           <Section k="填寫時間" v={new Date(record.created_at).toLocaleString('zh-TW')} />
           <div className="divider" />
-          <Section k="家長稱呼" v={<strong>{record.parent_name}</strong>} />
-          <Section k="孩子稱呼" v={<strong>{record.child_name}</strong>} />
+          <Section k="家長稱呼" v={<strong>{isSuper ? record.super_parent_name : record.parent_name}</strong>} />
+          <Section k={isSuper ? 'LINE 名稱 / ID' : '孩子稱呼'} v={<strong>{isSuper ? record.super_line_name : record.child_name}</strong>} />
           <div className="divider" />
-          <Section k="Q1 · 最符合孩子需求的特色" v={findOptionLabels('q1', record.q1_feature ?? [])} />
-          {record.q1_other && <Section k="Q1 其他" v={record.q1_other} />}
-          <Section k="Q2 · 孩子 7 日後的變化" v={findOptionLabels('q2', record.q2_change ?? [])} />
-          {record.q2_other && <Section k="Q2 其他" v={record.q2_other} />}
-          <Section k="Q3 · 期待的改變" v={findOptionLabels('q3', record.q3_expectation ?? [])} />
-          {record.q3_other && <Section k="Q3 其他" v={record.q3_other} />}
-          <Section k="Q4 · 希望提供的協助" v={findOptionLabels('q4', record.q4_assistance ?? [])} />
-          {record.q4_other && <Section k="Q4 其他" v={record.q4_other} />}
+          {isSuper ? (
+            <>
+              <Section k="孩子年齡" v={(record.super_child_ages ?? []).join('、')} />
+              <Section k="最近陪伴孩子最常卡住的地方" v={(record.super_stuck_points ?? []).join('、')} />
+              <Section k="認識來源" v={record.super_source} />
+            </>
+          ) : (
+            <>
+              <Section k="Q1 · 最符合孩子需求的特色" v={findOptionLabels('q1', record.q1_feature ?? [])} />
+              {record.q1_other && <Section k="Q1 其他" v={record.q1_other} />}
+              <Section k="Q2 · 孩子 7 日後的變化" v={findOptionLabels('q2', record.q2_change ?? [])} />
+              {record.q2_other && <Section k="Q2 其他" v={record.q2_other} />}
+              <Section k="Q3 · 期待的改變" v={findOptionLabels('q3', record.q3_expectation ?? [])} />
+              {record.q3_other && <Section k="Q3 其他" v={record.q3_other} />}
+              <Section k="Q4 · 希望提供的協助" v={findOptionLabels('q4', record.q4_assistance ?? [])} />
+              {record.q4_other && <Section k="Q4 其他" v={record.q4_other} />}
+            </>
+          )}
           <div className="divider" />
           <Section
             k="開放式回饋"
-            v={record.feedback || <span style={{ color: '#93a0ac' }}>（未填寫）</span>}
+            v={(isSuper ? record.super_feedback : record.feedback) || <span style={{ color: '#93a0ac' }}>（未填寫）</span>}
           />
           <Section k="跟進狀態" v={FOLLOWUP_STATUS_LABEL[record.followup_status as keyof typeof FOLLOWUP_STATUS_LABEL] ?? record.followup_status} />
           <Section

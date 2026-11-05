@@ -1,10 +1,12 @@
 import type { SurveyRecord } from '../types'
 import { CAMPAIGN } from '../data/survey'
+import { ORIGINAL_PROJECT_ID, SUPER_PROJECT_ID } from '../data/projects'
 import { getSupabase } from './supabase'
 import { isSupabaseConfigured } from './config'
 import { sanitizeText } from './sanitize'
 
 export interface SubmitPayload {
+  projectId?: string
   parentName: string
   childName: string
   q1_feature: string[]
@@ -19,6 +21,17 @@ export interface SubmitPayload {
   campaign: string
   batch: string
   source: string
+}
+
+export interface SuperSubmitPayload {
+  projectId: typeof SUPER_PROJECT_ID
+  parentName: string
+  lineName: string
+  childAges: string[]
+  stuckPoints: string[]
+  source: string
+  feedback: string
+  batch: string
 }
 
 function sanitizeArray(items: string[], maxLen: number): string[] {
@@ -63,6 +76,7 @@ export async function submitResponse(
   const { error } = await supabase
     .from('survey_responses')
     .insert({
+      project_id: payload.projectId ?? ORIGINAL_PROJECT_ID,
       parent_name: sanitizeText(payload.parentName, 40),
       child_name: sanitizeText(payload.childName, 40),
       q1_feature: sanitizeArray(payload.q1_feature, 60),
@@ -83,6 +97,41 @@ export async function submitResponse(
 
   if (error) {
     // 由資料庫 unique 限制來的重複插入 → 避免重複提交
+    if (error.code === '23505') throw new Error('duplicate')
+    throw new Error(error.message)
+  }
+  return { id: '' }
+}
+
+export async function submitSuperResponse(payload: SuperSubmitPayload): Promise<{ id: string }> {
+  const supabase = assertConfigured()
+  const { error } = await supabase
+    .from('survey_responses')
+    .insert({
+      project_id: SUPER_PROJECT_ID,
+      parent_name: undefined,
+      child_name: undefined,
+      q1_feature: [],
+      q1_other: undefined,
+      q2_change: [],
+      q2_other: undefined,
+      q3_expectation: [],
+      q3_other: undefined,
+      q4_assistance: [],
+      q4_other: undefined,
+      super_parent_name: sanitizeText(payload.parentName, 60),
+      super_line_name: sanitizeText(payload.lineName, 120),
+      super_child_ages: sanitizeArray(payload.childAges, 30),
+      super_stuck_points: sanitizeArray(payload.stuckPoints, 40),
+      super_source: sanitizeText(payload.source, 60),
+      super_feedback: sanitizeText(payload.feedback, 2000),
+      campaign: 'super_parents_7day_1',
+      batch: payload.batch,
+      source: 'super_parents',
+      followup_status: 'new',
+      lead_status: computeLeadStatus(payload.stuckPoints),
+    })
+  if (error) {
     if (error.code === '23505') throw new Error('duplicate')
     throw new Error(error.message)
   }
@@ -119,23 +168,24 @@ export async function adminIsAuthed(): Promise<boolean> {
 }
 
 // ---------- Admin：讀取正式資料庫 ----------
-export async function fetchResponses(): Promise<SurveyRecord[]> {
+export async function fetchResponses(projectId: string = ORIGINAL_PROJECT_ID): Promise<SurveyRecord[]> {
   const supabase = assertConfigured()
   const { data, error } = await supabase
     .from('survey_responses')
     .select('*')
+    .eq('project_id', projectId)
     .order('created_at', { ascending: false })
   if (error) throw new Error(error.message)
   return (data ?? []) as unknown as SurveyRecord[]
 }
 
-export async function fetchStats(): Promise<{
+export async function fetchStats(projectId: string = ORIGINAL_PROJECT_ID): Promise<{
   total: number
   today: number
   week: number
   consulted: number
 }> {
-  const rows = await fetchResponses()
+  const rows = await fetchResponses(projectId)
   const now = new Date()
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
   const startOfWeek = new Date(now)

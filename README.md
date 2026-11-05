@@ -161,6 +161,24 @@ npm run lint      # oxlint
 npm test          # vitest 單元測試
 ```
 
+## 平凡爸媽很 Super 專案
+
+新專案使用 URL project 參數，與原本 7 日英語閱讀口說營資料隔離：
+
+```text
+https://staurosleeace.github.io/ienglish-survey/#/?project=super_parents_7day_1
+```
+
+執行 `supabase/migrations/0004_multi_project_super_parents.sql` 後，既有資料會自動標記為 `7day_english_camp`，新資料使用 `project_id = super_parents_7day_1`。後台的專案頁籤可切換兩個專案。
+
+新專案社群連結請設定環境變數：
+
+```bash
+VITE_SUPER_COMMUNITY_URL=https://你的正式社群邀請網址
+```
+
+目前尚未提供正式社群邀請網址，因此完成頁會提示管理者補上設定，不會使用虛構連結。
+
 ---
 
 ## 部署

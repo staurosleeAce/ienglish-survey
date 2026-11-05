@@ -2,6 +2,7 @@ import * as XLSX from 'xlsx'
 import { findOptionLabels } from '../data/survey'
 import { followupPriority } from './api'
 import type { SurveyRecord } from '../types'
+import { SUPER_PROJECT_ID } from '../data/projects'
 
 /**
  * 將資料轉成適合客服/業務整理的資料列。
@@ -11,6 +12,24 @@ import type { SurveyRecord } from '../types'
 export function toExportRows(rows: SurveyRecord[]) {
   return rows.map((r) => {
     const p = followupPriority(r)
+    if (r.project_id === SUPER_PROJECT_ID) {
+      return {
+        填寫時間: formatDateTime(r.created_at),
+        專案: '平凡爸媽很 Super｜7 天陪伴・第 1 期',
+        家長稱呼: r.super_parent_name ?? '',
+        LINE名稱或ID: r.super_line_name ?? '',
+        孩子年齡: (r.super_child_ages ?? []).join('；'),
+        最近陪伴孩子的困擾: (r.super_stuck_points ?? []).join('；'),
+        認識來源: r.super_source ?? '',
+        還想說的話: r.super_feedback ?? '',
+        活動梯次: r.batch,
+        資料來源: r.source ?? '',
+        Lead分類: r.lead_status || '',
+        跟進優先: p.label,
+        跟進狀態: r.followup_status,
+        ID: r.id,
+      }
+    }
     return {
       填寫時間: formatDateTime(r.created_at),
       家長稱呼: r.parent_name,
