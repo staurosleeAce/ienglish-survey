@@ -56,10 +56,13 @@ export interface SurveyRecord {
   super_source: string | null
   super_feedback: string | null
   closing_child_ages: string[] | null
+  closing_child_ages_other: string | null
   closing_biggest_gain: string[] | null
+  closing_biggest_gain_other: string | null
   closing_expectation: string | null
   closing_future_interest: string | null
   closing_next_topic: string[] | null
+  closing_next_topic_other: string | null
   closing_feedback: string | null
   closing_action: string | null
 }

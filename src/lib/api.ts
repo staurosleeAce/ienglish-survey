@@ -38,10 +38,13 @@ export interface SuperClosingSubmitPayload {
   projectId: typeof SUPER_PROJECT_ID
   parentName: string
   childAges: string[]
+  childAgesOther: string
   biggestGain: string[]
+  biggestGainOther: string
   expectation: string
   futureInterest: string
   nextTopic: string[]
+  nextTopicOther: string
   feedback: string
   action: string
   batch: string
@@ -171,10 +174,13 @@ export async function submitSuperClosingResponse(payload: SuperClosingSubmitPayl
       q4_assistance: [],
       q4_other: undefined,
       closing_child_ages: sanitizeArray(payload.childAges, 30),
+      closing_child_ages_other: sanitizeText(payload.childAgesOther, 100),
       closing_biggest_gain: sanitizeArray(payload.biggestGain, 60),
+      closing_biggest_gain_other: sanitizeText(payload.biggestGainOther, 100),
       closing_expectation: sanitizeText(payload.expectation, 80),
       closing_future_interest: sanitizeText(payload.futureInterest, 80),
       closing_next_topic: sanitizeArray(payload.nextTopic, 80),
+      closing_next_topic_other: sanitizeText(payload.nextTopicOther, 100),
       closing_feedback: sanitizeText(payload.feedback, 2000),
       closing_action: sanitizeText(payload.action, 2000),
       campaign: 'super_parents_7day_1',

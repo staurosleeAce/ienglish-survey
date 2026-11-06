@@ -7,10 +7,13 @@ alter table public.survey_responses
 
 alter table public.survey_responses
   add column if not exists closing_child_ages text[] default '{}',
+  add column if not exists closing_child_ages_other text,
   add column if not exists closing_biggest_gain text[] default '{}',
+  add column if not exists closing_biggest_gain_other text,
   add column if not exists closing_expectation text,
   add column if not exists closing_future_interest text,
   add column if not exists closing_next_topic text[] default '{}',
+  add column if not exists closing_next_topic_other text,
   add column if not exists closing_feedback text,
   add column if not exists closing_action text;
 
