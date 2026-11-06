@@ -24,6 +24,7 @@ export function ResponseDetail({
 }) {
   const p = followupPriority(record)
   const isSuper = record.project_id === SUPER_PROJECT_ID
+  const isClosing = isSuper && record.survey_type === 'closing'
 
   return (
     <div className="drawer-overlay" onClick={onClose}>
@@ -53,9 +54,17 @@ export function ResponseDetail({
           <Section k="填寫時間" v={new Date(record.created_at).toLocaleString('zh-TW')} />
           <div className="divider" />
           <Section k="家長稱呼" v={<strong>{isSuper ? record.super_parent_name : record.parent_name}</strong>} />
-          <Section k={isSuper ? 'LINE 名稱 / ID' : '孩子稱呼'} v={<strong>{isSuper ? record.super_line_name : record.child_name}</strong>} />
+          <Section k={isSuper ? (isClosing ? '填寫者識別' : 'LINE 名稱 / ID') : '孩子稱呼'} v={<strong>{isSuper ? (isClosing ? '結束問券' : record.super_line_name) : record.child_name}</strong>} />
           <div className="divider" />
-          {isSuper ? (
+          {isClosing ? (
+            <>
+              <Section k="孩子年齡" v={(record.closing_child_ages ?? []).join('、')} />
+              <Section k="今天最大的收穫" v={(record.closing_biggest_gain ?? []).join('、')} />
+              <Section k="講座是否符合期待" v={record.closing_expectation} />
+              <Section k="是否願意參加未來講座" v={record.closing_future_interest} />
+              <Section k="下次想聽的話題" v={(record.closing_next_topic ?? []).join('、')} />
+            </>
+          ) : isSuper ? (
             <>
               <Section k="孩子年齡" v={(record.super_child_ages ?? []).join('、')} />
               <Section k="最近陪伴孩子最常卡住的地方" v={(record.super_stuck_points ?? []).join('、')} />
@@ -76,7 +85,7 @@ export function ResponseDetail({
           <div className="divider" />
           <Section
             k="開放式回饋"
-            v={(isSuper ? record.super_feedback : record.feedback) || <span style={{ color: '#93a0ac' }}>（未填寫）</span>}
+            v={(isClosing ? record.closing_feedback : isSuper ? record.super_feedback : record.feedback) || <span style={{ color: '#93a0ac' }}>（未填寫）</span>}
           />
           <Section k="跟進狀態" v={FOLLOWUP_STATUS_LABEL[record.followup_status as keyof typeof FOLLOWUP_STATUS_LABEL] ?? record.followup_status} />
           <Section

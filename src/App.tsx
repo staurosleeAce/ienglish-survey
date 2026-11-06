@@ -2,6 +2,7 @@ import { lazy, Suspense, useEffect } from 'react'
 import { Route, Routes, useSearchParams } from 'react-router-dom'
 import { SurveyPage } from './pages/SurveyPage'
 import { SuperSurveyPage } from './pages/SuperSurveyPage'
+import { SuperClosingSurveyPage } from './pages/SuperClosingSurveyPage'
 import { SUPER_PROJECT_ID } from './data/projects'
 
 const AdminPage = lazy(() => import('./pages/AdminPage'))
@@ -30,6 +31,7 @@ function ProjectSurvey() {
   const qIndex = hash.indexOf('?')
   const hashParams = new URLSearchParams(qIndex >= 0 ? hash.slice(qIndex + 1) : '')
   const project = hashParams.get('project') ?? params.get('project')
+  const form = hashParams.get('form') ?? params.get('form')
 
   useEffect(() => {
     document.title = project === SUPER_PROJECT_ID
@@ -37,5 +39,6 @@ function ProjectSurvey() {
       : '7 日英語閱讀口說營｜小 i 陪你回顧'
   }, [project])
 
+  if (project === SUPER_PROJECT_ID && form === 'closing') return <SuperClosingSurveyPage />
   return project === SUPER_PROJECT_ID ? <SuperSurveyPage /> : <SurveyPage />
 }

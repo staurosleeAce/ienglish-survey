@@ -3,6 +3,7 @@ export type SurveyResponseRow = {
   id: string
   created_at: string
   project_id: string
+  survey_type: string
   parent_name: string
   child_name: string
   q1_feature: string[]
@@ -25,6 +26,13 @@ export type SurveyResponseRow = {
   super_stuck_points: string[] | null
   super_source: string | null
   super_feedback: string | null
+  closing_child_ages: string[] | null
+  closing_biggest_gain: string[] | null
+  closing_expectation: string | null
+  closing_future_interest: string | null
+  closing_next_topic: string[] | null
+  closing_feedback: string | null
+  closing_action: string | null
 }
 
 export type SurveyAdminsRow = {

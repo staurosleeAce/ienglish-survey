@@ -34,6 +34,19 @@ export interface SuperSubmitPayload {
   batch: string
 }
 
+export interface SuperClosingSubmitPayload {
+  projectId: typeof SUPER_PROJECT_ID
+  parentName: string
+  childAges: string[]
+  biggestGain: string[]
+  expectation: string
+  futureInterest: string
+  nextTopic: string[]
+  feedback: string
+  action: string
+  batch: string
+}
+
 function sanitizeArray(items: string[], maxLen: number): string[] {
   return (items ?? []).map((s) => sanitizeText(s, maxLen)).filter(Boolean)
 }
@@ -77,6 +90,7 @@ export async function submitResponse(
     .from('survey_responses')
     .insert({
       project_id: payload.projectId ?? ORIGINAL_PROJECT_ID,
+      survey_type: 'start',
       parent_name: sanitizeText(payload.parentName, 40),
       child_name: sanitizeText(payload.childName, 40),
       q1_feature: sanitizeArray(payload.q1_feature, 60),
@@ -109,6 +123,7 @@ export async function submitSuperResponse(payload: SuperSubmitPayload): Promise<
     .from('survey_responses')
     .insert({
       project_id: SUPER_PROJECT_ID,
+      survey_type: 'start',
       parent_name: undefined,
       child_name: undefined,
       q1_feature: [],
@@ -130,6 +145,43 @@ export async function submitSuperResponse(payload: SuperSubmitPayload): Promise<
       source: 'super_parents',
       followup_status: 'new',
       lead_status: computeLeadStatus(payload.stuckPoints),
+    })
+  if (error) {
+    if (error.code === '23505') throw new Error('duplicate')
+    throw new Error(error.message)
+  }
+  return { id: '' }
+}
+
+export async function submitSuperClosingResponse(payload: SuperClosingSubmitPayload): Promise<{ id: string }> {
+  const supabase = assertConfigured()
+  const { error } = await supabase
+    .from('survey_responses')
+    .insert({
+      project_id: SUPER_PROJECT_ID,
+      survey_type: 'closing',
+      parent_name: undefined,
+      child_name: undefined,
+      q1_feature: [],
+      q1_other: undefined,
+      q2_change: [],
+      q2_other: undefined,
+      q3_expectation: [],
+      q3_other: undefined,
+      q4_assistance: [],
+      q4_other: undefined,
+      closing_child_ages: sanitizeArray(payload.childAges, 30),
+      closing_biggest_gain: sanitizeArray(payload.biggestGain, 60),
+      closing_expectation: sanitizeText(payload.expectation, 80),
+      closing_future_interest: sanitizeText(payload.futureInterest, 80),
+      closing_next_topic: sanitizeArray(payload.nextTopic, 80),
+      closing_feedback: sanitizeText(payload.feedback, 2000),
+      closing_action: sanitizeText(payload.action, 2000),
+      campaign: 'super_parents_7day_1',
+      batch: payload.batch,
+      source: 'super_parents_closing',
+      followup_status: 'new',
+      lead_status: 'MEDIUM',
     })
   if (error) {
     if (error.code === '23505') throw new Error('duplicate')
@@ -168,24 +220,25 @@ export async function adminIsAuthed(): Promise<boolean> {
 }
 
 // ---------- Admin：讀取正式資料庫 ----------
-export async function fetchResponses(projectId: string = ORIGINAL_PROJECT_ID): Promise<SurveyRecord[]> {
+export async function fetchResponses(projectId: string = ORIGINAL_PROJECT_ID, surveyType = 'start'): Promise<SurveyRecord[]> {
   const supabase = assertConfigured()
   const { data, error } = await supabase
     .from('survey_responses')
     .select('*')
     .eq('project_id', projectId)
+    .eq('survey_type', surveyType)
     .order('created_at', { ascending: false })
   if (error) throw new Error(error.message)
   return (data ?? []) as unknown as SurveyRecord[]
 }
 
-export async function fetchStats(projectId: string = ORIGINAL_PROJECT_ID): Promise<{
+export async function fetchStats(projectId: string = ORIGINAL_PROJECT_ID, surveyType = 'start'): Promise<{
   total: number
   today: number
   week: number
   consulted: number
 }> {
-  const rows = await fetchResponses(projectId)
+  const rows = await fetchResponses(projectId, surveyType)
   const now = new Date()
   const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
   const startOfWeek = new Date(now)

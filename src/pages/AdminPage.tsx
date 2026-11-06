@@ -22,15 +22,37 @@ type SortDir = 'asc' | 'desc'
 type Qid = 'q1' | 'q2' | 'q3' | 'q4'
 type LeadFilter = 'all' | 'HIGH' | 'MEDIUM' | 'FOLLOW_UP' | 'LOW'
 
+const CLOSING_CHART_OPTIONS: Record<'q3' | 'q4', { key: string; label: string; icon: string }[]> = {
+  q3: [
+    { key: '3_6', label: '3–6 歲（幼兒園）', icon: '🌱' },
+    { key: '7_9', label: '7–9 歲（國小低年級）', icon: '📚' },
+    { key: '10_12', label: '10–12 歲（國小高年級）', icon: '🌟' },
+    { key: '13_15', label: '13–15 歲（國中）', icon: '🧭' },
+    { key: '16_18', label: '16–18 歲（高中）', icon: '🚀' },
+    { key: 'other', label: '其他', icon: '✏️' },
+  ],
+  q4: [
+    { key: 'stable', label: '心裡穩定了，能放鬆一些', icon: '🌿' },
+    { key: 'see_self_child', label: '照見自己，也看見孩子', icon: '💛' },
+    { key: 'accompany', label: '3 不陪、3 要陪的陪伴方法', icon: '🤝' },
+    { key: 'ai_family', label: 'AI 快速變化的時代，家庭可以給孩子什麼', icon: '💡' },
+    { key: 'experience', label: 'Eric 和 Kelin 的真實經驗', icon: '🎤' },
+    { key: 'other', label: '其他', icon: '✏️' },
+  ],
+}
+type SurveyType = 'start' | 'closing'
+
 function isSuperRecord(record: SurveyRecord) {
   return record.project_id === SUPER_PROJECT_ID
 }
 
 function recordParent(record: SurveyRecord) {
+  if (isSuperRecord(record) && record.survey_type === 'closing') return '結束問券填寫者'
   return isSuperRecord(record) ? (record.super_parent_name ?? '') : record.parent_name
 }
 
 function recordChild(record: SurveyRecord) {
+  if (isSuperRecord(record) && record.survey_type === 'closing') return '平凡爸媽 Super'
   return isSuperRecord(record) ? (record.super_line_name ?? '') : record.child_name
 }
 
@@ -47,6 +69,13 @@ function recordSearchValues(record: SurveyRecord) {
     ...(record.super_child_ages ?? []),
     ...(record.super_stuck_points ?? []),
     record.super_source,
+    ...(record.closing_child_ages ?? []),
+    ...(record.closing_biggest_gain ?? []),
+    record.closing_expectation,
+    record.closing_future_interest,
+    ...(record.closing_next_topic ?? []),
+    record.closing_feedback,
+    record.closing_action,
   ]
 }
 
@@ -61,6 +90,7 @@ export default function AdminPage() {
   const [leadFilter, setLeadFilter] = useState<LeadFilter>('all')
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
   const [projectId, setProjectId] = useState(ORIGINAL_PROJECT_ID)
+  const [surveyType, setSurveyType] = useState<SurveyType>('start')
   const [sortDir, setSortDir] = useState<SortDir>('desc')
   const [detail, setDetail] = useState<SurveyRecord | null>(null)
   const [loading, setLoading] = useState(true)
@@ -82,13 +112,13 @@ export default function AdminPage() {
     consulted: number
   } | null>(null)
 
-  const refreshProject = useCallback(async (id: string) => {
-    const [list, s] = await Promise.all([fetchResponses(id), fetchStats(id)])
+  const refreshProject = useCallback(async (id: string, type: SurveyType = 'start') => {
+    const [list, s] = await Promise.all([fetchResponses(id, type), fetchStats(id, type)])
     setRows(list)
     setStats(s)
   }, [])
 
-  const refresh = useCallback(() => refreshProject(projectId), [projectId, refreshProject])
+  const refresh = useCallback(() => refreshProject(projectId, surveyType), [projectId, surveyType, refreshProject])
 
   useEffect(() => {
     let alive = true
@@ -266,19 +296,46 @@ export default function AdminPage() {
                   className={`project-tab ${projectId === project.id ? 'active' : ''}`}
                   onClick={() => {
                     setProjectId(project.id)
+                    setSurveyType('start')
                     setBatchFilter('all')
                     setLeadFilter('all')
                     setStatusFilter('all')
                     setSearch('')
                     setDetail(null)
                     setLoading(true)
-                    refreshProject(project.id).finally(() => setLoading(false))
+                    refreshProject(project.id, 'start').finally(() => setLoading(false))
                   }}
                 >
                   {project.name}
                 </button>
               ))}
             </div>
+            {projectId === SUPER_PROJECT_ID && (
+              <div className="project-tabs survey-type-tabs" role="tablist" aria-label="Super 問券類型">
+                {([
+                  ['start', '開始問券'],
+                  ['closing', '結束問券'],
+                ] as const).map(([type, label]) => (
+                  <button
+                    key={type}
+                    type="button"
+                    role="tab"
+                    aria-selected={surveyType === type}
+                    className={`project-tab ${surveyType === type ? 'active' : ''}`}
+                    onClick={() => {
+                      setSurveyType(type)
+                      setBatchFilter('all')
+                      setSearch('')
+                      setDetail(null)
+                      setLoading(true)
+                      refreshProject(projectId, type).finally(() => setLoading(false))
+                    }}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
           <div className="admin-actions">
             <button className="btn btn--ghost btn--sm" onClick={refresh}>
@@ -421,12 +478,16 @@ export default function AdminPage() {
                       <td>{recordChild(r)}</td>
                       <td className="fade">
                         {isSuperRecord(r)
-                          ? (r.super_child_ages ?? []).join('、')
+                          ? r.survey_type === 'closing'
+                            ? (r.closing_child_ages ?? []).join('、')
+                            : (r.super_child_ages ?? []).join('、')
                           : findOptionLabels('q1', r.q1_feature ?? [])}
                       </td>
                       <td className="fade">
                         {isSuperRecord(r)
-                          ? (r.super_stuck_points ?? []).join('、')
+                          ? r.survey_type === 'closing'
+                            ? (r.closing_biggest_gain ?? []).join('、')
+                            : (r.super_stuck_points ?? []).join('、')
                           : findOptionLabels('q4', r.q4_assistance ?? [])}
                       </td>
                       <td>
@@ -575,17 +636,24 @@ function PriorityChip({ pKey, label }: { pKey: string; label: string }) {
 
 function QDistribution({ qid, rows }: { qid: Qid; rows: SurveyRecord[] }) {
   const superMode = rows.some((r) => r.project_id === SUPER_PROJECT_ID)
-  const q = superMode
-    ? SUPER_PROJECT.questions.find((item) => item.id === qid)
-    : getQuestion(qid)
+  const closingMode = superMode && rows.some((r) => r.survey_type === 'closing')
+  const q = closingMode && (qid === 'q3' || qid === 'q4')
+    ? { options: CLOSING_CHART_OPTIONS[qid] }
+    : superMode
+      ? SUPER_PROJECT.questions.find((item) => item.id === qid)
+      : getQuestion(qid)
   if (!q) return null
   const counts = new Map<string, number>()
   for (const r of rows) {
     const sourceField = 'field' in q ? q.field : qid
     const raw = superMode
-      ? qid === 'q3'
-        ? r.super_child_ages ?? []
-        : r.super_stuck_points ?? []
+      ? r.survey_type === 'closing'
+        ? qid === 'q3'
+          ? r.closing_child_ages ?? []
+          : r.closing_biggest_gain ?? []
+        : qid === 'q3'
+          ? r.super_child_ages ?? []
+          : r.super_stuck_points ?? []
       : (r as unknown as Record<string, unknown>)[sourceField] ?? []
     const arr = Array.isArray(raw) ? (raw as string[]) : raw ? [String(raw)] : []
     for (const v of arr) counts.set(v, (counts.get(v) ?? 0) + 1)
@@ -596,8 +664,12 @@ function QDistribution({ qid, rows }: { qid: Qid; rows: SurveyRecord[] }) {
   const titleMap: Record<string, string> = {
     q1: 'Q1 最符合孩子需求的特色',
     q2: 'Q2 孩子 7 日後的變化',
-    q3: 'Q3 最期待的改變',
-    q4: superMode ? '最近陪孩子最常卡住的地方' : 'Q4 希望提供的協助',
+    q3: superMode
+      ? rows.some((r) => r.survey_type === 'closing') ? '結束問券｜孩子年齡' : '開始問券｜孩子年齡'
+      : 'Q3 最期待的改變',
+    q4: superMode
+      ? rows.some((r) => r.survey_type === 'closing') ? '結束問券｜今天最大的收穫' : '開始問券｜最常卡住的地方'
+      : 'Q4 希望提供的協助',
   }
 
   if (sorted.length === 0) {
